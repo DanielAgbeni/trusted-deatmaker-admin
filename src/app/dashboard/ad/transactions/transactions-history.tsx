@@ -12,20 +12,34 @@ import { AdminDealListItem } from "@/lib/store/features/adminDashboardApi/adminD
 
 interface TransactionHistoryProps {
   onRefresh?: () => void;
+  transactions?: Transaction[];
+  isLoading?: boolean;
+  isRefreshing?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  totalItems?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export default function TransactionHistory({
-  onRefresh
+  onRefresh,
+  transactions: propTransactions,
+  isLoading: propIsLoading,
+  isRefreshing,
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange
 }: TransactionHistoryProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch deals
-  const { data: dealsResponse, isLoading, isFetching } = useGetDealsQuery({
+  const { data: dealsResponse, isLoading: queryLoading, isFetching } = useGetDealsQuery({
     page: 0,
     size: 20,
     search: searchTerm.length > 2 ? searchTerm : undefined,
-  });
+  }, { skip: !!propTransactions }); // Skip query if transactions are provided via props
 
   const mapDealToTransaction = (deal: AdminDealListItem): Transaction => ({
     id: deal.dealId,
@@ -44,7 +58,8 @@ export default function TransactionHistory({
     status: deal.status === "COMPLETED" ? "Completed" : deal.status === "FAILED" ? "Failed" : "Pending",
   });
 
-  const transactions: Transaction[] = dealsResponse?.data?.content?.map(mapDealToTransaction) || [];
+  const transactions: Transaction[] = propTransactions || (dealsResponse?.data?.content?.map(mapDealToTransaction) || []);
+  const isLoading = propIsLoading !== undefined ? propIsLoading : (queryLoading || isFetching);
 
   return (
     <div className="space-y-4">
@@ -62,8 +77,8 @@ export default function TransactionHistory({
         </div>
       </div>
 
-      <HistoryTable columns={TransactionsColumns} data={transactions} />
-      {(isLoading || isFetching) && <p className="text-sm text-muted-foreground">Loading transactions...</p>}
+      <HistoryTable columns={TransactionsColumns} data={transactions} isLoading={isLoading} />
+      {isLoading && <p className="text-sm text-muted-foreground">Loading transactions...</p>}
     </div>
   );
 }

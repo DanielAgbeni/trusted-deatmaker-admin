@@ -246,11 +246,20 @@ export function ChargeSettings({ marketplaceId }: ChargeSettingsProps) {
 
       {/* Charge Range Dialog */}
       <ChargeRangeDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        chargeRange={selectedChargeRange}
-        onSave={handleSaveChargeRange}
-        marketplaceId={marketplaceId}
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        config={
+          selectedChargeRange
+            ? {
+              minAmount: selectedChargeRange.minimumAmount,
+              maxAmount: selectedChargeRange.maximumAmount,
+              flatAmount: selectedChargeRange.fixedCharge,
+              percentage: selectedChargeRange.percentCharge / 100,
+              capAmount: selectedChargeRange.chargeCap,
+            }
+            : undefined
+        }
+        vendorId={marketplaceId}
       />
     </div>
   );
