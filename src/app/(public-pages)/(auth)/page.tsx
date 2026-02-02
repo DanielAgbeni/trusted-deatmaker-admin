@@ -3,7 +3,7 @@
 import { useState } from "react";
 import AuthForm from "@/components/auth/AuthForm";
 
-export default function SignInPage() {
+export default function SignInPage({ mode = "signin" }: { mode?: "signin" | "signup" }) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -26,6 +26,7 @@ export default function SignInPage() {
           onFormDataChange={handleFormDataChange}
           errors={errors}
           setErrors={setErrors}
+          mode={mode}
         />
       </div>
     </div>

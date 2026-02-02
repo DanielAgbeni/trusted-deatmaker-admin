@@ -14,6 +14,7 @@ interface AuthFormProps {
   onFormDataChange: (field: string, value: string) => void;
   errors: Record<string, string>;
   setErrors: (errors: Record<string, string>) => void;
+  mode?: "signin" | "signup";
 }
 
 export default function AuthForm({
@@ -21,12 +22,13 @@ export default function AuthForm({
   onFormDataChange,
   errors,
   setErrors,
+  mode = "signin",
 }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  
+
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const { login: authLogin } = useAuth();
 
@@ -50,18 +52,18 @@ export default function AuthForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError("");
-    
+
     const newErrors: Record<string, string> = {};
     if (!formData.email) {
       newErrors.email = "Admin email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
     }
-    
+
     if (!formData.password) {
       newErrors.password = "Password is required";
     }
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -78,16 +80,16 @@ export default function AuthForm({
       if (result.success) {
         if (result.data?.accessToken) {
           const userTypeFromResponse = result.data.userType;
-          
+
           if (userTypeFromResponse !== "ADMIN") {
             setApiError("Access denied. Admin credentials required.");
             setIsSubmitting(false);
             return;
           }
-          
+
           authLogin(result.data.accessToken, result);
           router.push("/dashboard/ad");
-          
+
         } else {
           setApiError("Login successful but no access token received");
           setIsSubmitting(false);
@@ -105,9 +107,9 @@ export default function AuthForm({
       }
     } catch (err: any) {
       const errorData = err.data || err;
-      
-      if (errorData.success === false && 
-          errorData.message?.includes("Account not verified")) {
+
+      if (errorData.success === false &&
+        errorData.message?.includes("Account not verified")) {
         localStorage.setItem("signupEmail", formData.email);
         localStorage.setItem("otpResent", "true");
         const redirectUrl = `/verify-otp?email=${encodeURIComponent(formData.email)}`;
@@ -189,15 +191,14 @@ export default function AuthForm({
       <button
         type="submit"
         disabled={isButtonDisabled()}
-        className={`w-full py-3 px-4 rounded-md font-medium flex items-center justify-center space-x-2 mt-6 transition-colors ${
-          isButtonDisabled()
+        className={`w-full py-3 px-4 rounded-md font-medium flex items-center justify-center space-x-2 mt-6 transition-colors ${isButtonDisabled()
             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
             : 'bg-primary text-white hover:bg-[057fa4]'
-        }`}
+          }`}
       >
         <span>
-          {isLoading 
-            ? "Authenticating..." 
+          {isLoading
+            ? "Authenticating..."
             : "Admin Sign In"}
         </span>
         <LiaArrowRightSolid className="text-lg" />
