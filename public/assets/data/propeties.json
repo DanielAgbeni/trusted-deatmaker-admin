@@ -1,0 +1,226 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "slug": "accusamus",
+      "name": "accusamus",
+      "location": "375 Bayer Streets\nMorissettestad, PA 18605-6480",
+      "price": "7219.00",
+      "type": "illum",
+      "size": "cupiditate",
+      "amenities": [["iure", "saepe", "eius"]],
+      "description": "Dolor omnis officia laudantium minima.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/0077dd?text=odio",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/00cccc?text=facilis"
+      ],
+      "features": [["dolorum", "fugit", "aperiam"]],
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "slug": "tempora",
+      "name": "tempora",
+      "location": "7195 Larkin Plaza Apt. 634\nPort Gregshire, MO 92809-0399",
+      "price": "1047.00",
+      "type": "enim",
+      "size": "dolor",
+      "amenities": [["aliquid", "enim", "illo"]],
+      "description": "Consequatur et sit nisi unde in.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/0000dd?text=consequatur",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/007766?text=quos"
+      ],
+      "features": [["rerum", "sunt", "minima"]],
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "slug": "eligendi",
+      "name": "eligendi",
+      "location": "9626 O'Conner Port\nWest Georgianna, NC 21555-5073",
+      "price": "1166.00",
+      "type": "illo",
+      "size": "modi",
+      "amenities": [["eum", "laborum", "ut"]],
+      "description": "Voluptas amet expedita quibusdam laboriosam autem.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/00aabb?text=porro",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/00cc11?text=qui"
+      ],
+      "features": [["totam", "nihil", "delectus"]],
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "slug": "quam",
+      "name": "quam",
+      "location": "69369 Reta Plaza Apt. 356\nNorth Einar, NH 47536-3345",
+      "price": "7996.00",
+      "type": "quidem",
+      "size": "enim",
+      "amenities": [["nostrum", "dolor", "quasi"]],
+      "description": "Iste excepturi rerum sunt.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/00ee99?text=nisi",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/009922?text=quam"
+      ],
+      "features": [["eveniet", "distinctio", "et"]],
+      "is_active": true
+    },
+    {
+      "id": 5,
+      "slug": "neque",
+      "name": "neque",
+      "location": "42677 Stracke Way\nSouth Brandyfurt, NJ 22605-2636",
+      "price": "2722.00",
+      "type": "est",
+      "size": "maiores",
+      "amenities": [["possimus", "sapiente", "autem"]],
+      "description": "Sunt hic omnis voluptas nesciunt sed ex.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/009988?text=aut",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/00dd22?text=inventore"
+      ],
+      "features": [["dolor", "ut", "repellat"]],
+      "is_active": true
+    },
+    {
+      "id": 6,
+      "slug": "officia",
+      "name": "officia",
+      "location": "9916 Roberts Trail\nSouth Bellechester, WA 47484-3812",
+      "price": "5084.00",
+      "type": "esse",
+      "size": "ducimus",
+      "amenities": [["fugit", "quis", "saepe"]],
+      "description": "Temporibus quaerat minima quisquam.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/0055ff?text=dolor",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/005544?text=consequatur"
+      ],
+      "features": [["rerum", "est", "in"]],
+      "is_active": true
+    },
+    {
+      "id": 7,
+      "slug": "voluptas",
+      "name": "voluptas",
+      "location": "67612 Lueilwitz River Suite 607\nCorwinchester, MS 10617",
+      "price": "3949.00",
+      "type": "laboriosam",
+      "size": "ducimus",
+      "amenities": [["totam", "doloremque", "architecto"]],
+      "description": "Quod tenetur ullam ducimus laudantium.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/00ee99?text=veritatis",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/002277?text=provident"
+      ],
+      "features": [["velit", "est", "rerum"]],
+      "is_active": true
+    },
+    {
+      "id": 8,
+      "slug": "esse",
+      "name": "esse",
+      "location": "478 Sally Gardens\nHermistonfurt, NJ 69738",
+      "price": "4787.00",
+      "type": "qui",
+      "size": "quam",
+      "amenities": [["consequatur", "tenetur", "illum"]],
+      "description": "Possimus voluptatibus inventore enim quas.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/00dd11?text=eveniet",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/0077aa?text=exercitationem"
+      ],
+      "features": [["omnis", "eos", "architecto"]],
+      "is_active": true
+    },
+    {
+      "id": 9,
+      "slug": "aut",
+      "name": "aut",
+      "location": "19659 Mozelle Curve\nNathanborough, HI 82470-5183",
+      "price": "5925.00",
+      "type": "ad",
+      "size": "ex",
+      "amenities": [["ratione", "dolor", "perferendis"]],
+      "description": "Culpa optio est dolorem hic inventore at.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/0011ff?text=debitis",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/008877?text=eum"
+      ],
+      "features": [["fugiat", "voluptas", "nobis"]],
+      "is_active": true
+    },
+    {
+      "id": 10,
+      "slug": "non",
+      "name": "non",
+      "location": "82527 Julio Pines\nAugustaborough, OH 55375",
+      "price": "8198.00",
+      "type": "deleniti",
+      "size": "velit",
+      "amenities": [["esse", "unde", "necessitatibus"]],
+      "description": "Non nihil est quisquam sequi et eaque.",
+      "main_image_url": "https://via.placeholder.com/640x480.png/00aa77?text=delectus",
+      "featured_images_url": [
+        "https://via.placeholder.com/640x480.png/0066aa?text=ut"
+      ],
+      "features": [["impedit", "qui", "ea"]],
+      "is_active": true
+    }
+  ],
+  "links": {
+    "first": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=1",
+    "last": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=5",
+    "prev": null,
+    "next": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=2"
+  },
+  "meta": {
+    "current_page": 1,
+    "from": 1,
+    "last_page": 5,
+    "links": [
+      {
+        "url": null,
+        "label": "&laquo; Previous",
+        "active": false
+      },
+      {
+        "url": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=1",
+        "label": "1",
+        "active": true
+      },
+      {
+        "url": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=2",
+        "label": "2",
+        "active": false
+      },
+      {
+        "url": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=3",
+        "label": "3",
+        "active": false
+      },
+      {
+        "url": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=4",
+        "label": "4",
+        "active": false
+      },
+      {
+        "url": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=5",
+        "label": "5",
+        "active": false
+      },
+      {
+        "url": "https://api-staging.domingoteamrealty.com/v1/misc/properties?page=2",
+        "label": "Next &raquo;",
+        "active": false
+      }
+    ],
+    "path": "https://api-staging.domingoteamrealty.com/v1/misc/properties",
+    "per_page": 10,
+    "to": 10,
+    "total": 50
+  }
+}
