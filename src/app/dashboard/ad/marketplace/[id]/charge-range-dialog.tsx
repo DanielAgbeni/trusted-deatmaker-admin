@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useConfigureEscrowFeeMutation } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
+import { useConfigureEscrowFeeMutation, useUpdateEscrowFeeMutation } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -29,7 +29,10 @@ export function ChargeRangeDialog({
   vendorId,
   config,
 }: ChargeRangeDialogProps) {
-  const [configureEscrowFee, { isLoading }] = useConfigureEscrowFeeMutation();
+  const [configureEscrowFee, { isLoading: isCreating }] = useConfigureEscrowFeeMutation();
+  const [updateEscrowFee, { isLoading: isUpdating }] = useUpdateEscrowFeeMutation();
+
+  const isLoading = isCreating || isUpdating;
 
   const [formData, setFormData] = useState({
     minAmount: 0,
@@ -63,16 +66,30 @@ export function ChargeRangeDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await configureEscrowFee({
-        vendorId: vendorId,
-        currencyCode: "NGN", // Configuring for NGN by default as per current page context
-        type: "VENDOR_COMMISSION",
-        minAmount: Number(formData.minAmount),
-        maxAmount: Number(formData.maxAmount),
-        percentage: Number(formData.percentCharge) / 100, // Convert percentage to decimal (e.g. 5% -> 0.05)
-        flatAmount: Number(formData.fixedCharge),
-        capAmount: Number(formData.chargeCap),
-      }).unwrap();
+      if (config) {
+        await updateEscrowFee({
+          id: config.id,
+          vendorId: vendorId,
+          currencyCode: "NGN",
+          type: config.type || "VENDOR_COMMISSION",
+          minAmount: Number(formData.minAmount),
+          maxAmount: Number(formData.maxAmount),
+          percentage: Number(formData.percentCharge) / 100,
+          flatAmount: Number(formData.fixedCharge),
+          capAmount: Number(formData.chargeCap),
+        }).unwrap();
+      } else {
+        await configureEscrowFee({
+          vendorId: vendorId,
+          currencyCode: "NGN",
+          type: "VENDOR_COMMISSION",
+          minAmount: Number(formData.minAmount),
+          maxAmount: Number(formData.maxAmount),
+          percentage: Number(formData.percentCharge) / 100,
+          flatAmount: Number(formData.fixedCharge),
+          capAmount: Number(formData.chargeCap),
+        }).unwrap();
+      }
 
       toast.success(
         config

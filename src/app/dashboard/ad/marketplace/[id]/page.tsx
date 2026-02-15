@@ -35,7 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useGetVendorDetailsQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
+import { useGetVendorDetailsQuery, useDeleteEscrowFeeMutation } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
 import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -47,7 +47,8 @@ export default function MarketplaceDetailsPage({ params }: { params: Promise<{ i
   const id = resolvedParams.id;
   const router = useRouter();
 
-  const { data: response, isLoading, isError, error } = useGetVendorDetailsQuery(id);
+  const { data: response, isLoading, isError, error, refetch } = useGetVendorDetailsQuery(id);
+  const [deleteEscrowFee] = useDeleteEscrowFeeMutation();
   const vendor = response?.data;
 
   const [isChargeDialogOpen, setIsChargeDialogOpen] = useState(false);
@@ -61,6 +62,18 @@ export default function MarketplaceDetailsPage({ params }: { params: Promise<{ i
   const handleAddFee = () => {
     setSelectedFee(null);
     setIsChargeDialogOpen(true);
+  };
+
+  const handleDeleteFee = async (feeId: string) => {
+    if (window.confirm("Are you sure you want to delete this charge range?")) {
+      try {
+        await deleteEscrowFee(feeId).unwrap();
+        toast.success("Charge range deleted successfully");
+        refetch();
+      } catch (error: any) {
+        toast.error(error?.data?.message || "Failed to delete charge range");
+      }
+    }
   };
 
   if (isLoading) {
@@ -255,7 +268,12 @@ export default function MarketplaceDetailsPage({ params }: { params: Promise<{ i
                           >
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg border border-gray-100 bg-white shadow-sm hover:text-red-600 hover:border-red-100 group-hover:scale-110 transition-all">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteFee(fee.id)}
+                            className="h-8 w-8 rounded-lg border border-gray-100 bg-white shadow-sm hover:text-red-600 hover:border-red-100 group-hover:scale-110 transition-all"
+                          >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
@@ -297,7 +315,10 @@ export default function MarketplaceDetailsPage({ params }: { params: Promise<{ i
 
       <ChargeRangeDialog
         isOpen={isChargeDialogOpen}
-        onClose={() => setIsChargeDialogOpen(false)}
+        onClose={() => {
+          setIsChargeDialogOpen(false);
+          refetch();
+        }}
         vendorId={id}
         config={selectedFee}
       />

@@ -7,14 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HistoryTable } from "@/components/dashboard/tables";
 import { createFeeColumns, FeeActions } from "../../_columns/fees-table-columns";
 import { FeeDialog, FeeFormData } from "./currency-dialog";
-import { useGetEscrowFeesQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
+import { useGetEscrowFeesQuery, useUpdateEscrowFeeMutation, useDeleteEscrowFeeMutation, useConfigureEscrowFeeMutation } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
+import { toast } from "sonner";
 import { EscrowFeeConfig } from "@/lib/store/features/adminDashboardApi/adminDashboardTypes";
 
 export default function FeesSettingsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingFee, setEditingFee] = useState<EscrowFeeConfig | null>(null);
 
-  const { data: feesResponse, isLoading } = useGetEscrowFeesQuery({ page: 0, size: 20 });
+  const { data: feesResponse, isLoading, refetch } = useGetEscrowFeesQuery({ page: 0, size: 50 });
+  const [updateEscrowFee] = useUpdateEscrowFeeMutation();
+  const [deleteEscrowFee] = useDeleteEscrowFeeMutation();
+  const [configureEscrowFee] = useConfigureEscrowFeeMutation();
   const fees = feesResponse?.data?.content || [];
 
   const handleCreateNew = () => {
@@ -27,15 +31,44 @@ export default function FeesSettingsPage() {
     setDialogOpen(true);
   };
 
-  const handleToggleStatus = (fee: EscrowFeeConfig) => {
-    // Implement toggle Status API
-    console.log("Toggle status", fee);
+  const handleToggleStatus = async (fee: EscrowFeeConfig) => {
+    if (window.confirm(`Are you sure you want to ${fee.active ? 'disable' : 'enable'} this fee rule?`)) {
+      try {
+        await deleteEscrowFee(fee.id).unwrap();
+        toast.success(`Fee rule ${fee.active ? 'disabled' : 'enabled'} successfully`);
+        refetch();
+      } catch (error: any) {
+        toast.error(error?.data?.message || `Failed to ${fee.active ? 'disable' : 'enable'} fee rule`);
+      }
+    }
   };
 
   const handleSave = async (data: FeeFormData) => {
-    // Implement save logic (create/update) using API
-    console.log("Saving fee", data);
-    setDialogOpen(false);
+    const { calculationType, ...feeData } = data;
+    try {
+      if (editingFee) {
+        await updateEscrowFee({
+          id: editingFee.id,
+          vendorId: null, // Global config
+          currencyCode: "NGN", // Defaulting to NGN for now
+          type: "PLATFORM_FEE", // Assuming global config is platform fee
+          ...feeData
+        }).unwrap();
+        toast.success("Fee rule updated successfully");
+      } else {
+        await configureEscrowFee({
+          vendorId: null,
+          currencyCode: "NGN",
+          type: "PLATFORM_FEE",
+          ...feeData
+        }).unwrap();
+        toast.success("Fee rule added successfully");
+      }
+      setDialogOpen(false);
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to save fee rule");
+    }
   };
 
   const feeActions: FeeActions = {

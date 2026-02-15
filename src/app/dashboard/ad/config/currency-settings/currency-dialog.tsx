@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EscrowFeeConfig } from "@/lib/store/features/adminDashboardApi/adminDashboardTypes";
 
 export interface FeeFormData {
-  type: "PERCENTAGE" | "FIXED";
+  calculationType: "PERCENTAGE" | "FIXED";
   percentage: number;
   flatAmount: number;
   minAmount: number;
@@ -39,7 +39,7 @@ export function FeeDialog({
   fee,
   onSave,
 }: FeeDialogProps) {
-  const [type, setType] = useState<"PERCENTAGE" | "FIXED">("PERCENTAGE");
+  const [calculationType, setCalculationType] = useState<"PERCENTAGE" | "FIXED">("PERCENTAGE");
   const [percentage, setPercentage] = useState<number>(0);
   const [flatAmount, setFlatAmount] = useState<number>(0);
   const [minAmount, setMinAmount] = useState<number>(0);
@@ -49,7 +49,7 @@ export function FeeDialog({
 
   useEffect(() => {
     if (fee) {
-      setType(fee.type as "PERCENTAGE" | "FIXED" || "PERCENTAGE");
+      setCalculationType(fee.type as "PERCENTAGE" | "FIXED" || "PERCENTAGE");
       setPercentage(fee.percentage || 0);
       setFlatAmount(fee.flatAmount || 0);
       setMinAmount(fee.minAmount || 0);
@@ -57,7 +57,7 @@ export function FeeDialog({
       setCapAmount(fee.capAmount || 0);
       setActive(fee.active);
     } else {
-      setType("PERCENTAGE");
+      setCalculationType("PERCENTAGE");
       setPercentage(0);
       setFlatAmount(0);
       setMinAmount(0);
@@ -69,7 +69,7 @@ export function FeeDialog({
 
   const handleSave = () => {
     onSave({
-      type,
+      calculationType,
       percentage,
       flatAmount,
       minAmount,
@@ -93,7 +93,7 @@ export function FeeDialog({
         <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
           <div className="space-y-2">
             <Label>Fee Type</Label>
-            <Select value={type} onValueChange={(v: "PERCENTAGE" | "FIXED") => setType(v)}>
+            <Select value={calculationType} onValueChange={(v: "PERCENTAGE" | "FIXED") => setCalculationType(v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
@@ -104,14 +104,14 @@ export function FeeDialog({
             </Select>
           </div>
 
-          {type === "PERCENTAGE" && (
+          {calculationType === "PERCENTAGE" && (
             <div className="space-y-2">
               <Label>Percentage (%)</Label>
               <Input type="number" value={percentage} onChange={(e) => setPercentage(parseFloat(e.target.value) || 0)} />
             </div>
           )}
 
-          {type === "FIXED" && (
+          {calculationType === "FIXED" && (
             <div className="space-y-2">
               <Label>Flat Amount</Label>
               <Input type="number" value={flatAmount} onChange={(e) => setFlatAmount(parseFloat(e.target.value) || 0)} />

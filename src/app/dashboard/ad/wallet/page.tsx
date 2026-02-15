@@ -27,7 +27,7 @@ export default async function WalletPage({
     resolvedSearchParams.transactionType as TransactionModes;
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="w-full min-w-0 overflow-hidden p-6 space-y-8">
       <h1 className="text-2xl font-bold capitalize">
         {transactionType}s Overview
       </h1>

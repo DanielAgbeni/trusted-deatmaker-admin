@@ -19,7 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useConfigurePaymentFeeMutation } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
+import { useConfigurePaymentFeeMutation, useUpdatePaymentFeeMutation } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
 import { toast } from "sonner";
 import { Percent, Wallet, ShieldCheck, Globe } from "lucide-react";
 
@@ -30,7 +30,10 @@ interface PaymentDialogProps {
 }
 
 export function PaymentDialog({ isOpen, onClose, config }: PaymentDialogProps) {
-    const [configurePaymentFee, { isLoading }] = useConfigurePaymentFeeMutation();
+    const [configurePaymentFee, { isLoading: isCreating }] = useConfigurePaymentFeeMutation();
+    const [updatePaymentFee, { isLoading: isUpdating }] = useUpdatePaymentFeeMutation();
+
+    const isLoading = isCreating || isUpdating;
 
     const [formData, setFormData] = useState({
         provider: "PAYSTACK",
@@ -69,11 +72,19 @@ export function PaymentDialog({ isOpen, onClose, config }: PaymentDialogProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await configurePaymentFee(formData).unwrap();
-            toast.success("Payment fee configured successfully");
+            if (config?.id) {
+                await updatePaymentFee({
+                    id: config.id,
+                    ...formData
+                }).unwrap();
+                toast.success("Payment fee updated successfully");
+            } else {
+                await configurePaymentFee(formData).unwrap();
+                toast.success("Payment fee configured successfully");
+            }
             onClose();
         } catch (error: any) {
-            toast.error(error?.data?.message || "Failed to configure payment fee");
+            toast.error(error?.data?.message || `Failed to ${config ? 'update' : 'configure'} payment fee`);
         }
     };
 

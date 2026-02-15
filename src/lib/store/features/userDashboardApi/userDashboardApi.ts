@@ -225,7 +225,7 @@ export const userDashboardApi = createApi({
 
 		// Get User Profile
 		getUserProfile: builder.query<ApiResponse<UserProfile>, void>({
-			query: () => '/user/dashboard/profile',
+			query: () => '/admin/dashboard/profile',
 			providesTags: ['UserProfile'],
 		}),
 

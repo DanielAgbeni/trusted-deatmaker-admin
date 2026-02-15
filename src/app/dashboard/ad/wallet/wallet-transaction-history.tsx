@@ -67,7 +67,7 @@ export default function WalletTransactionHistory({
   const isLoading = wLoading || dLoading;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Transactions History</h2>
 

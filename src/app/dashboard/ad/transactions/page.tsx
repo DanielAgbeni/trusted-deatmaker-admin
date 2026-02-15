@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function WalletPage() {
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="w-full min-w-0 overflow-hidden p-6 space-y-8">
       <h1 className="text-2xl font-bold">Overview</h1>
       <TransactionContainer />
     </div>

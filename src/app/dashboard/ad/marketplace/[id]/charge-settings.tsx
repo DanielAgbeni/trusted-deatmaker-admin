@@ -12,6 +12,8 @@ import {
   ChargeRange,
   ChargeRangeColumns,
 } from "../../_columns/charge-range-table-column";
+import { useGetEscrowFeesQuery, useDeleteEscrowFeeMutation } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
+import { toast } from "sonner";
 
 interface ChargeSettingsProps {
   marketplaceId: string;
@@ -31,24 +33,29 @@ const initialChargeRanges: ChargeRange[] = [
 ];
 
 export function ChargeSettings({ marketplaceId }: ChargeSettingsProps) {
-  const [chargeRanges, setChargeRanges] = useState<ChargeRange[]>(
-    initialChargeRanges.filter((cr) => cr.marketplaceId === marketplaceId)
-  );
+  const { data: response, isLoading, isFetching, refetch } = useGetEscrowFeesQuery({
+    vendorId: marketplaceId,
+    type: "VENDOR_COMMISSION",
+    page: 0,
+    size: 50
+  });
+
+  const [deleteEscrowFee] = useDeleteEscrowFeeMutation();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedChargeRange, setSelectedChargeRange] =
-    useState<ChargeRange | null>(null);
+    useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [chargeCap, setChargeCap] = useState("100");
-  const [fixedCharge, setFixedCharge] = useState("0");
-  const [percentCharge, setPercentCharge] = useState("3");
+
+  const chargeRanges = response?.data?.content || [];
 
   // Filter charge ranges based on search term
-  const filteredChargeRanges = chargeRanges.filter(
+  const filteredChargeRanges = (chargeRanges as any[]).filter(
     (range) =>
-      range.minimumAmount.toString().includes(searchTerm) ||
-      range.maximumAmount.toString().includes(searchTerm) ||
-      range.fixedCharge.toString().includes(searchTerm) ||
-      range.percentCharge.toString().includes(searchTerm)
+      range.minAmount.toString().includes(searchTerm) ||
+      range.maxAmount.toString().includes(searchTerm) ||
+      range.flatAmount.toString().includes(searchTerm) ||
+      range.percentage.toString().includes(searchTerm)
   );
 
   // Handle charge range CRUD operations
@@ -94,9 +101,17 @@ export function ChargeSettings({ marketplaceId }: ChargeSettingsProps) {
       setIsDialogOpen(true);
     };
 
-    const handleDeleteChargeRange = (event: CustomEvent) => {
-      const chargeRangeId = event.detail as number;
-      setChargeRanges((prev) => prev.filter((cr) => cr.id !== chargeRangeId));
+    const handleDeleteChargeRange = async (event: CustomEvent) => {
+      const chargeRangeId = event.detail as string;
+      if (window.confirm("Are you sure you want to delete this charge range?")) {
+        try {
+          await deleteEscrowFee(chargeRangeId).unwrap();
+          toast.success("Charge range deleted successfully");
+          refetch();
+        } catch (error: any) {
+          toast.error(error?.data?.message || "Failed to delete charge range");
+        }
+      }
     };
 
     // Add event listeners
@@ -239,26 +254,28 @@ export function ChargeSettings({ marketplaceId }: ChargeSettingsProps) {
         <CardContent>
           <HistoryTable
             columns={ChargeRangeColumns}
-            data={filteredChargeRanges}
+            data={filteredChargeRanges.map((cr: any) => ({
+              id: cr.id,
+              minimumAmount: cr.minAmount,
+              maximumAmount: cr.maxAmount,
+              fixedCharge: cr.flatAmount,
+              percentCharge: cr.percentage * 100,
+              chargeCap: cr.capAmount,
+              marketplaceId: marketplaceId,
+              type: cr.type
+            }))}
+            isLoading={isLoading || isFetching}
           />
         </CardContent>
       </Card>
 
-      {/* Charge Range Dialog */}
       <ChargeRangeDialog
         isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        config={
-          selectedChargeRange
-            ? {
-              minAmount: selectedChargeRange.minimumAmount,
-              maxAmount: selectedChargeRange.maximumAmount,
-              flatAmount: selectedChargeRange.fixedCharge,
-              percentage: selectedChargeRange.percentCharge / 100,
-              capAmount: selectedChargeRange.chargeCap,
-            }
-            : undefined
-        }
+        onClose={() => {
+          setIsDialogOpen(false);
+          refetch();
+        }}
+        config={selectedChargeRange}
         vendorId={marketplaceId}
       />
     </div>

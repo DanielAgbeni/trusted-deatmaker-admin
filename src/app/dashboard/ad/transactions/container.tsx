@@ -8,7 +8,6 @@ import StatCards from "./transaction-stats-card";
 export default function WalletContainer() {
   return (
     <>
-      <StatCards />
       <TransactionHistory />
     </>
   );

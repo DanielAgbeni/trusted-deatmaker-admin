@@ -62,7 +62,7 @@ export default function TransactionHistory({
   const isLoading = propIsLoading !== undefined ? propIsLoading : (queryLoading || isFetching);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 min-w-0">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-bold">Transactions History</h2>
 

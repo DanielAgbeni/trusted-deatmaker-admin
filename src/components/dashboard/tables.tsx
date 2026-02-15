@@ -22,13 +22,13 @@ import { DataTablePagination } from "./table-pagination";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { 
-  FileText, 
-  Calendar, 
-  History, 
-  Package, 
-  Users, 
-  DollarSign, 
+import {
+  FileText,
+  Calendar,
+  History,
+  Package,
+  Users,
+  DollarSign,
   Search,
   FolderOpen,
   FileQuestion,
@@ -60,12 +60,12 @@ export interface RecentTableContainerProps<TData, TValue> {
 }
 
 // Table Skeleton Component
-const TableSkeleton = ({ 
-  columns, 
+const TableSkeleton = ({
+  columns,
   rows = 5,
-  showHeader = true 
-}: { 
-  columns: number; 
+  showHeader = true
+}: {
+  columns: number;
   rows?: number;
   showHeader?: boolean;
 }) => {
@@ -98,12 +98,12 @@ const TableSkeleton = ({
 };
 
 // Recent Table Skeleton Component
-const RecentTableSkeleton = ({ 
-  columns, 
+const RecentTableSkeleton = ({
+  columns,
   rows = 3,
-  showSeeAll = false 
-}: { 
-  columns: number; 
+  showSeeAll = false
+}: {
+  columns: number;
   rows?: number;
   showSeeAll?: boolean;
 }) => {
@@ -319,9 +319,9 @@ export const EmptyStates = {
           <div className="space-y-2 text-center">
             <h3 className="text-lg font-medium">Something Went Wrong</h3>
             <p className="text-sm text-muted-foreground">{message}</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="mt-4"
               onClick={() => window.location.reload()}
             >
@@ -409,7 +409,7 @@ export const EmptyStates = {
         </TableBody>
       </>
     ),
-    
+
     RecentContainer: ({ columns, rows = 3 }: { columns: number; rows?: number }) => (
       <RecentTableSkeleton columns={columns} rows={rows} showSeeAll={true} />
     ),
@@ -443,11 +443,11 @@ export function HistoryTable<TData, TValue>({
   const hasData = table.getRowModel().rows?.length > 0;
 
   return (
-    <section className="w-full flex flex-col gap-4">
+    <section className="w-full min-w-0 flex flex-col gap-4 overflow-hidden">
       <Table>
         {isLoading ? (
-          <TableSkeleton 
-            columns={columns.length} 
+          <TableSkeleton
+            columns={columns.length}
             rows={skeletonRows}
             showHeader={true}
           />
@@ -462,9 +462,9 @@ export function HistoryTable<TData, TValue>({
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                       </TableHead>
                     );
                   })}
@@ -500,9 +500,9 @@ export function HistoryTable<TData, TValue>({
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                       </TableHead>
                     );
                   })}
@@ -539,8 +539,8 @@ export function RecentTableContainer<TData, TValue>({
   return (
     <Card className={`shadow-none gap-2 border-none px-0 ${className}`}>
       {isLoading ? (
-        <RecentTableSkeleton 
-          columns={columns.length} 
+        <RecentTableSkeleton
+          columns={columns.length}
           rows={skeletonRows}
           showSeeAll={showSeeAll}
         />
@@ -593,8 +593,8 @@ export function RecentTable<TData, TValue>({
   return (
     <Table>
       {isLoading ? (
-        <TableSkeleton 
-          columns={columns.length} 
+        <TableSkeleton
+          columns={columns.length}
           rows={skeletonRows}
           showHeader={true}
         />
@@ -609,9 +609,9 @@ export function RecentTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
@@ -645,9 +645,9 @@ export function RecentTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   );
                 })}
@@ -666,7 +666,7 @@ export function RecentTable<TData, TValue>({
 // Utility function to get appropriate empty state based on title
 export function getEmptyStateForTitle(title: string, colSpan?: number) {
   const titleLower = title.toLowerCase();
-  
+
   if (colSpan !== undefined) {
     // For HistoryTable (needs colSpan)
     if (titleLower.includes('history')) return EmptyStates.History(colSpan);

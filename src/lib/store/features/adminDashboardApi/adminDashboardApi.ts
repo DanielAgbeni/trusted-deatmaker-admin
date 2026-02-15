@@ -23,18 +23,68 @@ import type {
     ChangeAdminPasswordRequest
 } from './adminDashboardTypes';
 
+const baseQuery = fetchBaseQuery({
+    baseUrl: 'https://api.trusteddealmaker.com/api/v1',
+    prepareHeaders: (headers) => {
+        const token = localStorage.getItem('dealmakerauthToken');
+        if (token) {
+            headers.set('Authorization', `Bearer ${token}`);
+        }
+        return headers;
+    },
+});
+
+const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+    let result = await baseQuery(args, api, extraOptions);
+
+    if (result.error && result.error.status === 401) {
+        // Try to get a new token
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (refreshToken) {
+            const refreshResult = await baseQuery(
+                {
+                    url: '/auth/refresh',
+                    method: 'POST',
+                    body: { refreshToken },
+                },
+                api,
+                extraOptions
+            );
+
+            if (refreshResult.data) {
+                // Store the new token
+                const data = (refreshResult.data as any).data;
+                const newAccessToken = data.accessToken;
+                const newRefreshToken = data.refreshToken;
+
+                localStorage.setItem('dealmakerauthToken', newAccessToken);
+                if (newRefreshToken) {
+                    localStorage.setItem('refreshToken', newRefreshToken);
+                }
+
+                // Retry the original query with the new token
+                result = await baseQuery(args, api, extraOptions);
+            } else {
+                // Refresh failed - logout
+                localStorage.removeItem('dealmakerauthToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('dealmakerUserData');
+                window.location.href = '/signin';
+            }
+        } else {
+            // No refresh token - logout
+            localStorage.removeItem('dealmakerauthToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('dealmakerUserData');
+            window.location.href = '/signin';
+        }
+    }
+    return result;
+};
+
 export const adminDashboardApi = createApi({
     reducerPath: 'adminDashboardApi',
-    baseQuery: fetchBaseQuery({
-        baseUrl: 'https://api.trusteddealmaker.com/api/v1',
-        prepareHeaders: (headers) => {
-            const token = localStorage.getItem('dealmakerauthToken');
-            if (token) {
-                headers.set('Authorization', `Bearer ${token}`);
-            }
-            return headers;
-        },
-    }),
+    baseQuery: baseQueryWithReauth,
     tagTypes: ['Users', 'Admins', 'Vendors', 'Transactions', 'Disputes', 'Deals', 'AuditLogs', 'Fees'],
     endpoints: (builder) => ({
         // --- Users ---
@@ -228,6 +278,31 @@ export const adminDashboardApi = createApi({
             }),
             invalidatesTags: ['Fees'],
         }),
+        updateEscrowFee: builder.mutation<ApiResponse<EscrowFeeConfig>, {
+            id: string;
+            vendorId: string | null;
+            currencyCode: string;
+            type: 'PLATFORM_FEE' | 'VENDOR_COMMISSION';
+            minAmount: number;
+            maxAmount: number;
+            percentage: number;
+            flatAmount: number;
+            capAmount: number;
+        }>({
+            query: ({ id, ...body }) => ({
+                url: `/admin/fees/escrow/${id}`,
+                method: 'PUT',
+                body,
+            }),
+            invalidatesTags: ['Fees'],
+        }),
+        deleteEscrowFee: builder.mutation<ApiResponse<void>, string>({
+            query: (id) => ({
+                url: `/admin/fees/escrow/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Fees'],
+        }),
 
         getVendorDetails: builder.query<ApiResponse<AdminVendorDetails>, string>({
             query: (id) => `/admin/vendor/${id}`,
@@ -257,6 +332,23 @@ export const adminDashboardApi = createApi({
             query: (body) => ({
                 url: '/admin/fees/payment',
                 method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['Fees'],
+        }),
+        updatePaymentFee: builder.mutation<ApiResponse<PaymentFeeConfig>, {
+            id: string;
+            provider: string;
+            method: string;
+            type: string;
+            currencyCode: string;
+            percentage: number;
+            flatFee: number;
+            capAmount: number;
+        }>({
+            query: ({ id, ...body }) => ({
+                url: `/admin/fees/payment/${id}`,
+                method: 'PUT',
                 body,
             }),
             invalidatesTags: ['Fees'],
@@ -325,8 +417,11 @@ export const {
     useGetAuditLogsQuery,
     useGetEscrowFeesQuery,
     useConfigureEscrowFeeMutation,
+    useUpdateEscrowFeeMutation,
+    useDeleteEscrowFeeMutation,
     useGetPaymentFeesQuery,
     useConfigurePaymentFeeMutation,
+    useUpdatePaymentFeeMutation,
     useDeletePaymentFeeMutation,
     useCreateAdminStaffMutation,
     useUpdateAdminStatusMutation,
