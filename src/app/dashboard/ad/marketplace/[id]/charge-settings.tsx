@@ -19,18 +19,6 @@ interface ChargeSettingsProps {
   marketplaceId: string;
 }
 
-// Mock data for charge ranges
-const initialChargeRanges: ChargeRange[] = [
-  {
-    id: 1,
-    minimumAmount: 10000,
-    maximumAmount: 10000000,
-    fixedCharge: 0,
-    percentCharge: 3,
-    chargeCap: 100,
-    marketplaceId: "JIJI",
-  },
-];
 
 export function ChargeSettings({ marketplaceId }: ChargeSettingsProps) {
   const { data: response, isLoading, isFetching, refetch } = useGetEscrowFeesQuery({
@@ -58,28 +46,6 @@ export function ChargeSettings({ marketplaceId }: ChargeSettingsProps) {
       range.percentage.toString().includes(searchTerm)
   );
 
-  // Handle charge range CRUD operations
-  const handleSaveChargeRange = (chargeRangeData: Omit<ChargeRange, "id">) => {
-    if (selectedChargeRange) {
-      // Update existing charge range
-      setChargeRanges((prev) =>
-        prev.map((cr) =>
-          cr.id === selectedChargeRange.id
-            ? { ...chargeRangeData, id: selectedChargeRange.id }
-            : cr
-        )
-      );
-    } else {
-      // Create new charge range
-      const newChargeRange: ChargeRange = {
-        ...chargeRangeData,
-        id: Math.max(...chargeRanges.map((cr) => cr.id), 0) + 1,
-      };
-      setChargeRanges((prev) => [...prev, newChargeRange]);
-    }
-    setIsDialogOpen(false);
-    setSelectedChargeRange(null);
-  };
 
   // const handleUpdateEscrowCharges = () => {
   //   // Handle escrow charges update logic here
@@ -117,22 +83,22 @@ export function ChargeSettings({ marketplaceId }: ChargeSettingsProps) {
     // Add event listeners
     window.addEventListener(
       "editChargeRange",
-      handleEditChargeRange as EventListener
+      handleEditChargeRange as any
     );
     window.addEventListener(
       "deleteChargeRange",
-      handleDeleteChargeRange as EventListener
+      handleDeleteChargeRange as any
     );
 
     return () => {
       // Cleanup event listeners
       window.removeEventListener(
         "editChargeRange",
-        handleEditChargeRange as EventListener
+        handleEditChargeRange as any
       );
       window.removeEventListener(
         "deleteChargeRange",
-        handleDeleteChargeRange as EventListener
+        handleDeleteChargeRange as any
       );
     };
   }, []);
