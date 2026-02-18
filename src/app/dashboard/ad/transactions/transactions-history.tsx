@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
+import { PaginationState } from "@tanstack/react-table";
 import { HistoryTable } from "@/components/dashboard/tables";
 import {
   TransactionsColumns,
@@ -33,11 +34,15 @@ export default function TransactionHistory({
 }: TransactionHistoryProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 20,
+  });
 
   // Fetch deals
   const { data: dealsResponse, isLoading: queryLoading, isFetching } = useGetDealsQuery({
-    page: 0,
-    size: 20,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
     search: searchTerm.length > 2 ? searchTerm : undefined,
   }, { skip: !!propTransactions }); // Skip query if transactions are provided via props
 
@@ -77,7 +82,14 @@ export default function TransactionHistory({
         </div>
       </div>
 
-      <HistoryTable columns={TransactionsColumns} data={transactions} isLoading={isLoading} />
+      <HistoryTable
+        columns={TransactionsColumns}
+        data={transactions}
+        isLoading={isLoading}
+        pageCount={dealsResponse?.data?.totalPages || 0}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+      />
       {isLoading && <p className="text-sm text-muted-foreground">Loading transactions...</p>}
     </div>
   );
