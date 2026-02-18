@@ -155,13 +155,13 @@ export const WalletTransactionsColumns: ColumnDef<WalletTransaction>[] = [
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(payment.transactionId);
-                  toast.success("Payment ID copied to clipboard");
+                  toast.success("Transaction ID copied to clipboard");
                 } catch (error) {
-                  toast.error("Failed to copy Payment ID");
+                  toast.error("Failed to copy Transaction ID");
                 }
               }}
             >
-              Copy payment ID
+              Copy Transaction ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View customer</DropdownMenuItem>
