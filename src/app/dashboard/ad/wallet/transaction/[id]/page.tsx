@@ -94,28 +94,28 @@ export default function WalletTransactionDetailsPage({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Transaction ID</div>
               <div className="text-sm font-medium text-right break-all">
-                {transaction.transactionId}
+                {transaction?.transactionId}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Date</div>
               <div className="text-sm font-medium text-right">
-                {formatDate(transaction.date)}
+                {formatDate(transaction?.date)}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Amount</div>
               <div className="text-sm font-bold text-right text-primary">
-                ₦{transaction.amount.toLocaleString()}
+                ₦{transaction?.amount.toLocaleString()}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Fee</div>
               <div className="text-sm font-medium text-right">
-                ₦{transaction.fee.toLocaleString()}
+                ₦{transaction?.fee?.toLocaleString()}
               </div>
             </div>
 
@@ -123,7 +123,7 @@ export default function WalletTransactionDetailsPage({
               <div className="text-sm text-gray-500">Status</div>
               <div className="text-right">
                 <Badge className={getStatusColor(transaction.status)}>
-                  • {transaction.status}
+                  • {transaction?.status}
                 </Badge>
               </div>
             </div>
@@ -131,14 +131,14 @@ export default function WalletTransactionDetailsPage({
             <div className="grid grid-cols-2 gap-2 pt-2 border-t">
               <div className="text-sm text-gray-500">Fineract ID</div>
               <div className="text-sm font-medium text-right">
-                {transaction.fineractId || "N/A"}
+                {transaction?.fineractId || "N/A"}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Session ID</div>
               <div className="text-sm font-medium text-right truncate" title={transaction.sessionId}>
-                {transaction.sessionId || "N/A"}
+                {transaction?.sessionId || "N/A"}
               </div>
             </div>
           </CardContent>
@@ -155,28 +155,28 @@ export default function WalletTransactionDetailsPage({
             <div className="space-y-1">
               <div className="text-sm text-gray-500">Wallet Owner Email</div>
               <div className="text-sm font-medium text-blue-600">
-                {transaction.walletOwnerEmail || "N/A"}
+                {transaction?.walletOwnerEmail || "N/A"}
               </div>
             </div>
 
             <div className="space-y-1 pt-2 border-t">
               <div className="text-sm text-gray-500">Destination Bank</div>
               <div className="text-sm font-medium">
-                {transaction.destinationBank || "N/A"}
+                {transaction?.destinationBank || "N/A"}
               </div>
             </div>
 
             <div className="space-y-1">
               <div className="text-sm text-gray-500">Destination Account</div>
               <div className="text-sm font-medium">
-                {transaction.destinationAccount || "N/A"}
+                {transaction?.destinationAccount || "N/A"}
               </div>
             </div>
 
             <div className="space-y-1 pt-2 border-t">
               <div className="text-sm text-gray-500">Gateway Reference</div>
-              <div className="text-sm font-medium text-xs break-all text-slate-600">
-                {transaction.gatewayReference || "N/A"}
+              <div className="text-sm font-medium break-all text-slate-600">
+                {transaction?.gatewayReference || "N/A"}
               </div>
             </div>
 
