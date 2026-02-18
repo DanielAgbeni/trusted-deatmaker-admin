@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export interface Dispute {
   id: string;
@@ -42,9 +43,10 @@ function ActionsCell({ dispute }: { dispute: Dispute }) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem
-            onClick={() =>
-              navigator.clipboard.writeText(dispute.transactionId)
-            }
+            onClick={() => {
+              navigator.clipboard.writeText(dispute.transactionId);
+              toast.success("Transaction ID copied to clipboard");
+            }}
           >
             Copy Transaction ID
           </DropdownMenuItem>
