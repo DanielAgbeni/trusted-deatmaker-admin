@@ -42,6 +42,12 @@ interface DataTableProps<TData, TValue> {
   emptyState?: React.ReactNode;
   isLoading?: boolean;
   skeletonRows?: number;
+  pageCount?: number;
+  pagination?: {
+    pageIndex: number;
+    pageSize: number;
+  };
+  onPaginationChange?: (pagination: any) => void;
 }
 
 export interface RecentTableContainerProps<TData, TValue> {
@@ -422,6 +428,7 @@ export function HistoryTable<TData, TValue>({
   emptyState = <DefaultEmptyState colSpan={columns.length} />,
   isLoading = false,
   skeletonRows = 5,
+  ...props
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
@@ -435,9 +442,12 @@ export function HistoryTable<TData, TValue>({
     manualFiltering: true,
     manualPagination: true,
     manualSorting: true,
+    pageCount: props.pageCount,
     state: {
       sorting,
+      pagination: props.pagination,
     },
+    onPaginationChange: props.onPaginationChange,
   });
 
   const hasData = table.getRowModel().rows?.length > 0;

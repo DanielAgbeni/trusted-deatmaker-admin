@@ -84,8 +84,7 @@ export default function DisputeHistory() {
         </div>
       </div>
 
-      <HistoryTable columns={DisputesColumns} data={disputes} />
-      {isLoading && <p className="text-sm text-muted-foreground animate-pulse">Loading disputes...</p>}
+      <HistoryTable columns={DisputesColumns} data={disputes} isLoading={isLoading} />
     </div>
   );
 }

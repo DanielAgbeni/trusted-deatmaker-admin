@@ -137,7 +137,7 @@ export const PaymentColumns: ColumnDef<Payment>[] = [
   },
   {
     accessorKey: "paymentId",
-    header: "Payment ID",
+    header: "Transaction ID",
     cell: ({ row }) => (
       <Badge 
         variant="outline" 

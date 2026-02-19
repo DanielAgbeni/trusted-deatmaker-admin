@@ -16,6 +16,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import React from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export interface WalletTransaction {
   id: string;
@@ -151,9 +152,16 @@ export const WalletTransactionsColumns: ColumnDef<WalletTransaction>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(payment.transactionId);
+                  toast.success("Transaction ID copied to clipboard");
+                } catch (error) {
+                  toast.error("Failed to copy Transaction ID");
+                }
+              }}
             >
-              Copy payment ID
+              Copy Transaction ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View customer</DropdownMenuItem>

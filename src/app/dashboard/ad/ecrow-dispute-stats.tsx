@@ -21,7 +21,7 @@ interface StatItemProps {
 
 function StatItem({ icon, amount, label, iconBg }: StatItemProps) {
   return (
-    <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer group">
+    <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors group">
       <div className="flex items-center space-x-3">
         <div
           className={`w-10 h-10 rounded-full flex items-center justify-center ${iconBg}`}
