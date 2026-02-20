@@ -60,8 +60,7 @@ export default function MarketplacePage() {
       </div>
 
       <div className="space-y-4">
-        <HistoryTable columns={columns} data={vendorsWithFees} />
-        {isLoading && <p className="text-sm text-muted-foreground">Loading...</p>}
+        <HistoryTable columns={columns} data={vendorsWithFees} isLoading={isLoading} />
       </div>
 
       <CommissionDialog

@@ -20,10 +20,14 @@ import {
 export default function DisputeHistory() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 20,
+  });
 
   const { data: disputesResponse, isLoading, refetch } = useGetDisputesQuery({
-    page: 0,
-    size: 20,
+    page: pagination.pageIndex,
+    size: pagination.pageSize,
     search: search.length > 0 ? search : undefined,
     status: status === "all" ? undefined : status,
   });
@@ -84,7 +88,14 @@ export default function DisputeHistory() {
         </div>
       </div>
 
-      <HistoryTable columns={DisputesColumns} data={disputes} isLoading={isLoading} />
+      <HistoryTable 
+        columns={DisputesColumns} 
+        data={disputes} 
+        isLoading={isLoading}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        pageCount={disputesResponse?.data?.totalPages ?? -1}
+      />
     </div>
   );
 }

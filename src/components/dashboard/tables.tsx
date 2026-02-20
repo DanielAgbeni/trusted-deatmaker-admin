@@ -445,7 +445,7 @@ export function HistoryTable<TData, TValue>({
     pageCount: props.pageCount,
     state: {
       sorting,
-      pagination: props.pagination,
+      ...(props.pagination ? { pagination: props.pagination } : {}),
     },
     onPaginationChange: props.onPaginationChange,
   });
