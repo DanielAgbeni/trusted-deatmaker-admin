@@ -45,13 +45,13 @@ const configItems: ConfigItem[] = [
     icon: Clock,
     color: "bg-cyan-500",
   },
-  {
-    title: "Escrow Fees Configuration",
-    description: "Manage platform fees and commission rules",
-    href: "/dashboard/ad/config/currency-settings",
-    icon: DollarSign,
-    color: "bg-cyan-500",
-  },
+  // {
+  //   title: "Escrow Fees Configuration",
+  //   description: "Manage platform fees and commission rules",
+  //   href: "/dashboard/ad/config/currency-settings",
+  //   icon: DollarSign,
+  //   color: "bg-cyan-500",
+  // },
   {
     title: "Social Login Credentials",
     description: "Configure OAuth providers and social login integrations",

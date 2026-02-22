@@ -1,30 +1,21 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getMarketplaceColumns } from "../_columns/marketplace-table-column";
 import { HistoryTable } from "@/components/dashboard/tables";
 import { useGetVendorsQuery, useGetEscrowFeesQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
-import { CommissionDialog } from "./commission-dialog";
 
 export default function MarketplacePage() {
   const router = useRouter();
   const { data: vendorsResponse, isLoading: vendorsLoading } = useGetVendorsQuery({ page: 0, size: 20 });
   const { data: feesResponse, isLoading: feesLoading } = useGetEscrowFeesQuery({ page: 0, size: 100 });
 
-  const [selectedVendor, setSelectedVendor] = useState<any>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const handleEdit = useCallback((vendor: any) => {
-    setSelectedVendor(vendor);
-    setIsDialogOpen(true);
-  }, []);
-
   const handleView = useCallback((vendor: any) => {
     router.push(`/dashboard/ad/marketplace/${vendor.id}`);
   }, [router]);
 
-  const columns = useMemo(() => getMarketplaceColumns(handleEdit, handleView), [handleEdit, handleView]);
+  const columns = useMemo(() => getMarketplaceColumns(handleView), [handleView]);
 
   const vendors = vendorsResponse?.data?.content || [];
   const fees = feesResponse?.data?.content || (Array.isArray(feesResponse?.data) ? feesResponse?.data : []);
@@ -54,7 +45,7 @@ export default function MarketplacePage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Marketplaces / Vendors</h1>
           <p className="text-muted-foreground">
-            Manage registered vendors and their commission rates.
+            Manage registered vendors and their commission status.
           </p>
         </div>
       </div>
@@ -62,12 +53,6 @@ export default function MarketplacePage() {
       <div className="space-y-4">
         <HistoryTable columns={columns} data={vendorsWithFees} isLoading={isLoading} />
       </div>
-
-      <CommissionDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        vendor={selectedVendor}
-      />
     </div>
   );
 }

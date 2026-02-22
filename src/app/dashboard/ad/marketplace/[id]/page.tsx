@@ -137,12 +137,14 @@ export default function MarketplaceDetailsPage({ params }: { params: Promise<{ i
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to Listing
           </Button>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Marketplace Details</h1>
+          {/* <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Marketplace Details</h1> */}
         </div>
-        <Button variant="destructive" className="rounded-xl px-6 h-12 shadow-lg shadow-red-100 flex items-center gap-2 font-semibold">
-          <ShieldCheck className="h-5 w-5" />
-          Disable Marketplace
-        </Button>
+        {/* {marketplaceInfo.active && (
+          <Button variant="destructive" className="rounded-xl px-6 h-12 shadow-lg shadow-red-100 flex items-center gap-2 font-semibold">
+            <ShieldCheck className="h-5 w-5" />
+            Disable Marketplace
+          </Button>
+        )} */}
       </div>
 
       {/* Stats Cards Grid */}
@@ -237,50 +239,59 @@ export default function MarketplaceDetailsPage({ params }: { params: Promise<{ i
                   <TableHead className="w-16 font-semibold py-4 pl-8">SL</TableHead>
                   <TableHead className="font-semibold">Minimum</TableHead>
                   <TableHead className="font-semibold">Maximum</TableHead>
+                  <TableHead className="font-semibold">Type</TableHead>
                   <TableHead className="font-semibold">Fixed Charge</TableHead>
                   <TableHead className="font-semibold">Percent Charge</TableHead>
                   <TableHead className="font-semibold">Charge Cap</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
                   <TableHead className="font-semibold text-right pr-8">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {feeConfigurations && feeConfigurations.length > 0 ? (
-                  feeConfigurations.map((fee, index) => (
-                    <TableRow key={fee.id} className="group border-gray-50 hover:bg-cyan-50/30 transition-colors">
-                      <TableCell className="py-5 font-medium pl-8">{index + 1}</TableCell>
-                      <TableCell className="font-bold">₦{fee.minAmount.toLocaleString()}</TableCell>
-                      <TableCell className="font-bold">₦{fee.maxAmount.toLocaleString()}</TableCell>
-                      <TableCell className="font-bold">₦{fee.flatAmount.toLocaleString()}.00</TableCell>
-                      <TableCell className="font-bold">{(fee.percentage * 100).toFixed(0)}%</TableCell>
-                      <TableCell className="font-bold">₦{fee.capAmount.toLocaleString()}.00</TableCell>
-                      <TableCell>
-                        <Badge className="bg-cyan-600 text-white hover:bg-cyan-700 rounded-lg px-2 py-0.5 border-none">
-                          {fee.active ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right pr-8">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditFee(fee)}
-                            className="h-8 w-8 rounded-lg border border-gray-100 bg-white shadow-sm hover:text-cyan-600 hover:border-cyan-100 group-hover:scale-110 transition-all"
+                  feeConfigurations
+                    .filter((fee: any) => fee.active) // User said "hide the disabled button", interpreting as hiding inactive configs
+                    .map((fee: any, index: number) => (
+                      <TableRow key={fee.id} className="group border-gray-50 hover:bg-cyan-50/30 transition-colors">
+                        <TableCell className="py-5 font-medium pl-8">{index + 1}</TableCell>
+                        <TableCell className="font-bold">₦{fee.minAmount.toLocaleString()}</TableCell>
+                        <TableCell className="font-bold">₦{fee.maxAmount.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={
+                              fee.type === "VENDOR_COMMISSION"
+                                ? "bg-blue-100 text-blue-700 border-blue-200"
+                                : "bg-purple-100 text-purple-700 border-purple-200"
+                            }
                           >
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteFee(fee.id)}
-                            className="h-8 w-8 rounded-lg border border-gray-100 bg-white shadow-sm hover:text-red-600 hover:border-red-100 group-hover:scale-110 transition-all"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                            {fee.type === "VENDOR_COMMISSION" ? "COMMISSION" : "PLATFORM FEE"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-bold">₦{fee.flatAmount.toLocaleString()}.00</TableCell>
+                        <TableCell className="font-bold">{(fee.percentage * 100).toFixed(0)}%</TableCell>
+                        <TableCell className="font-bold">₦{fee.capAmount.toLocaleString()}.00</TableCell>
+                        <TableCell className="text-right pr-8">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditFee(fee)}
+                              className="h-8 w-8 rounded-lg border border-gray-100 bg-white shadow-sm hover:text-cyan-600 hover:border-cyan-100 group-hover:scale-110 transition-all"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteFee(fee.id)}
+                              className="h-8 w-8 rounded-lg border border-gray-100 bg-white shadow-sm hover:text-red-600 hover:border-red-100 group-hover:scale-110 transition-all"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
                 ) : (
                   <TableRow>
                     <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">

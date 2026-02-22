@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Loader2 } from "lucide-react";
 import { cn, formatCountValue, formatCurrency } from "@/lib/utils";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -8,6 +8,7 @@ interface BaseStatCardProps {
   title: string;
   index: number;
   count?: number;
+  isLoading?: boolean;
   change?: {
     trend: "up" | "down" | "neutral";
     value: string;
@@ -32,10 +33,18 @@ type StatCardProps = CurrencyStatCardProps | GeneralStatCardProps;
 
 // Main StatCard component - NO CHANGES to the rendering logic
 export function StatCard(props: StatCardProps) {
-  const { title, index, count, change } = props;
+  const { title, index, count, change, isLoading } = props;
 
   // Render value based on type
   const renderValue = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Loading...</span>
+        </div>
+      );
+    }
     if (props.type === "currency") {
       const { amount, decimal } = formatCurrency(props.value);
       return (
@@ -105,12 +114,14 @@ export function CurrencyStatCard({
   change,
   index,
   count,
+  isLoading,
 }: {
   title: string;
   value: number | string;
   change?: { trend: "up" | "down" | "neutral"; value: string };
   index: number;
   count?: number;
+  isLoading?: boolean;
 }) {
   return (
     <StatCard
@@ -120,6 +131,7 @@ export function CurrencyStatCard({
       change={change}
       index={index}
       count={count}
+      isLoading={isLoading}
     />
   );
 }
@@ -130,6 +142,7 @@ export function GeneralStatCard({
   change,
   index,
   count,
+  isLoading,
   formatter,
 }: {
   title: string;
@@ -137,6 +150,7 @@ export function GeneralStatCard({
   change?: { trend: "up" | "down" | "neutral"; value: string };
   index: number;
   count?: number;
+  isLoading?: boolean;
   formatter?: (value: string | number) => string;
 }) {
   return (
@@ -147,6 +161,7 @@ export function GeneralStatCard({
       change={change}
       index={index}
       count={count}
+      isLoading={isLoading}
       formatter={formatter}
     />
   );

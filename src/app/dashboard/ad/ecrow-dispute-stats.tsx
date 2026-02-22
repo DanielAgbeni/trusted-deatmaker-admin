@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   CheckCircle,
   DollarSign,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGetDealsQuery, useGetDisputesQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
@@ -17,9 +18,10 @@ interface StatItemProps {
   amount: string;
   label: string;
   iconBg: string;
+  isLoading?: boolean;
 }
 
-function StatItem({ icon, amount, label, iconBg }: StatItemProps) {
+function StatItem({ icon, amount, label, iconBg, isLoading }: StatItemProps) {
   return (
     <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors group">
       <div className="flex items-center space-x-3">
@@ -29,7 +31,13 @@ function StatItem({ icon, amount, label, iconBg }: StatItemProps) {
           {icon}
         </div>
         <div>
-          <div className="font-semibold text-gray-900 text-lg">{amount}</div>
+          <div className="font-semibold text-gray-900 text-lg flex items-center gap-2">
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : (
+              amount
+            )}
+          </div>
           <div className="text-sm text-gray-600">{label}</div>
         </div>
       </div>
@@ -44,6 +52,7 @@ interface StatsSectionProps {
     amount: string;
     label: string;
     iconBg: string;
+    isLoading?: boolean;
   }>;
 }
 
@@ -64,40 +73,36 @@ function StatsSection({ title, stats }: StatsSectionProps) {
 
 export function EcrowDisputeStats() {
   // Fetch Deals Stats
-  const { data: activeDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'Active' }); // Assuming 'Active' status
-  const { data: completedDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'Completed' });
-  const { data: disputedDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'Disputed' }); // Or check logic
-  // "Total Commissions" not available via list.
+  const { data: completedDeals, isLoading: dealsLoading } = useGetDealsQuery({ page: 0, size: 0, status: 'COMPLETED' });
+  const { data: inProgressDeals, isLoading: inProgressLoading } = useGetDealsQuery({ page: 0, size: 0, status: 'IN_PROGRESS' });
+  const { data: disputedDeals, isLoading: disputedLoading } = useGetDealsQuery({ page: 0, size: 0, status: 'DISPUTED' });
 
   // Fetch Disputes Stats
-  const { data: resolvedDisputes } = useGetDisputesQuery({ page: 0, size: 0, status: 'RESOLVED' });
-  const { data: pendingDisputes } = useGetDisputesQuery({ page: 0, size: 0, status: 'OPEN' });
-  const { data: escalatedDisputes } = useGetDisputesQuery({ page: 0, size: 0, status: 'ESCALATED' }); // Assuming status
+  const { data: resolvedDisputes, isLoading: resolvedLoading } = useGetDisputesQuery({ page: 0, size: 0, status: 'RESOLVED' });
+  const { data: openDisputes, isLoading: openLoading } = useGetDisputesQuery({ page: 0, size: 0, status: 'OPEN' });
+  const { data: unassignedDisputes, isLoading: unassignedLoading } = useGetDisputesQuery({ page: 0, size: 0, status: 'UNASSIGNED' });
 
   const transactionsStats = [
     {
-      icon: <ArrowUpDown className="w-5 h-5 text-green-600" />,
-      amount: (activeDeals?.data?.totalElements || 0).toString(),
-      label: "Active Escrow Deals",
+      icon: <CheckCircle className="w-5 h-5 text-green-600" />,
+      amount: (completedDeals?.data?.totalElements || 0).toString(),
+      label: "COMPLETED",
       iconBg: "bg-green-100",
+      isLoading: dealsLoading,
     },
     {
       icon: <ArrowUpDown className="w-5 h-5 text-orange-600" />,
-      amount: (completedDeals?.data?.totalElements || 0).toString(),
-      label: "Completed Escrow Deals",
+      amount: (inProgressDeals?.data?.totalElements || 0).toString(),
+      label: "IN_PROGRESS",
       iconBg: "bg-orange-100",
+      isLoading: inProgressLoading,
     },
     {
-      icon: <ArrowUpDown className="w-5 h-5 text-red-600" />,
+      icon: <XCircle className="w-5 h-5 text-red-600" />,
       amount: (disputedDeals?.data?.totalElements || 0).toString(),
-      label: "Disputed Escrow Deals",
+      label: "DISPUTED",
       iconBg: "bg-red-100",
-    },
-    {
-      icon: <CreditCard className="w-5 h-5 text-blue-600" />,
-      amount: "N/A", // API limitation
-      label: "Total Commissions (Val)",
-      iconBg: "bg-blue-100",
+      isLoading: disputedLoading,
     },
   ];
 
@@ -105,26 +110,23 @@ export function EcrowDisputeStats() {
     {
       icon: <CheckCircle className="w-5 h-5 text-green-600" />,
       amount: (resolvedDisputes?.data?.totalElements || 0).toString(),
-      label: "Resolved Disputes",
+      label: "RESOLVED",
       iconBg: "bg-green-100",
+      isLoading: resolvedLoading,
     },
     {
       icon: <AlertTriangle className="w-5 h-5 text-orange-600" />,
-      amount: (pendingDisputes?.data?.totalElements || 0).toString(),
-      label: "Pending Disputes",
+      amount: (openDisputes?.data?.totalElements || 0).toString(),
+      label: "OPEN",
       iconBg: "bg-orange-100",
+      isLoading: openLoading,
     },
     {
       icon: <XCircle className="w-5 h-5 text-red-600" />,
-      amount: (escalatedDisputes?.data?.totalElements || 0).toString(),
-      label: "Escalated Disputes",
+      amount: (unassignedDisputes?.data?.totalElements || 0).toString(),
+      label: "UNASSIGNED",
       iconBg: "bg-red-100",
-    },
-    {
-      icon: <DollarSign className="w-5 h-5 text-blue-600" />,
-      amount: "N/A",
-      label: "Dispute Charges",
-      iconBg: "bg-blue-100",
+      isLoading: unassignedLoading,
     },
   ];
 

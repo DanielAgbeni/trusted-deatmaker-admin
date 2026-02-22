@@ -18,7 +18,7 @@ import { AdminVendorListItem } from "@/lib/store/features/adminDashboardApi/admi
 import { Percent } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
-export const getMarketplaceColumns = (onEdit: (vendor: any) => void, onView: (vendor: any) => void): ColumnDef<any>[] => [
+export const getMarketplaceColumns = (onView: (vendor: any) => void): ColumnDef<any>[] => [
   {
     id: "sl",
     header: "SL",
@@ -30,26 +30,21 @@ export const getMarketplaceColumns = (onEdit: (vendor: any) => void, onView: (ve
     cell: ({ row }) => <div className="font-semibold uppercase tracking-tight">{row.getValue("name")}</div>,
   },
   {
-    id: "commissions",
-    header: "Commissions",
+    id: "hasCommission",
+    header: "Commission Set",
     cell: ({ row }) => {
-      const vendor = row.original;
-      const fee = vendor.escrowFee;
-      if (!fee) return <div className="text-muted-foreground">₦0.00</div>;
-
-      if (fee.flatAmount > 0) {
-        const { amount, decimal } = formatCurrency(fee.flatAmount);
-        return (
-          <div className="font-medium text-gray-900">
-            {amount}.{decimal}
-          </div>
-        );
-      }
-
+      const hasCommission = row.original.hasCommission as boolean;
       return (
-        <div className="font-medium text-gray-900">
-          {(fee.percentage * 100).toFixed(1)}%
-        </div>
+        <Badge
+          variant="outline"
+          className={
+            hasCommission
+              ? "bg-green-100 text-green-800 border-green-200 rounded-lg px-2"
+              : "bg-red-100 text-red-800 border-red-200 rounded-lg px-2"
+          }
+        >
+          {hasCommission ? "Yes" : "No"}
+        </Badge>
       );
     },
   },
@@ -89,16 +84,6 @@ export const getMarketplaceColumns = (onEdit: (vendor: any) => void, onView: (ve
             onClick={() => onView(vendor)}
           >
             View
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-cyan-600 border-cyan-200 hover:bg-cyan-50 flex items-center gap-1 h-10 rounded-xl px-4"
-            onClick={() => onEdit(vendor)}
-          >
-            <Percent className="h-4 w-4" />
-            {hasFee ? "Edit Commission" : "Set Commission"}
           </Button>
 
           <DropdownMenu>

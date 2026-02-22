@@ -34,15 +34,34 @@ export default function StatCards() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((stat, index) => (
-        <GeneralStatCard
-          key={stat.title}
-          title={stat.title}
-          value={stat.value}
-          change={stat.change}
-          index={index}
-        />
-      ))}
+      <GeneralStatCard
+        title="Total Users"
+        value={(allUsers?.data?.totalElements || 0).toString()}
+        change={{ value: "+0%", trend: "neutral" }}
+        index={0}
+        isLoading={!allUsers}
+      />
+      <GeneralStatCard
+        title="Active Users"
+        value={(activeUsers?.data?.totalElements || 0).toString()}
+        change={{ value: "+0%", trend: "neutral" }}
+        index={1}
+        isLoading={!activeUsers}
+      />
+      <GeneralStatCard
+        title="Suspended Users"
+        value={(suspendedUsers?.data?.totalElements || 0).toString()}
+        change={{ value: "+0%", trend: "neutral" }}
+        index={2}
+        isLoading={!suspendedUsers}
+      />
+      <GeneralStatCard
+        title="Unverified Users"
+        value={(unverifiedUsers?.data?.totalElements || 0).toString()}
+        change={{ value: "+0%", trend: "neutral" }}
+        index={3}
+        isLoading={!unverifiedUsers}
+      />
     </div>
   );
 }
