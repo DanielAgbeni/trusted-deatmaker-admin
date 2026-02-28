@@ -22,16 +22,47 @@ export const getMarketplaceColumns = (onView: (vendor: any) => void): ColumnDef<
   {
     id: "sl",
     header: "SL",
-    cell: ({ row }) => <div>{row.index + 1}</div>,
+    cell: ({ row }) => <div className="text-gray-500 font-medium">{row.index + 1}</div>,
   },
   {
-    accessorKey: "name",
-    header: "Marketplace ID",
-    cell: ({ row }) => <div className="font-semibold uppercase tracking-tight">{row.getValue("name")}</div>,
+    header: "Vendor Details",
+    cell: ({ row }) => {
+      const vendor = row.original;
+      return (
+        <div className="flex flex-col gap-0.5">
+          <span className="font-bold text-gray-900 uppercase tracking-tight">{vendor.name}</span>
+          <span className="text-xs text-muted-foreground">{vendor.email}</span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "orgCode",
+    header: "Org Code",
+    cell: ({ row }) => <div className="font-mono text-xs bg-gray-50 px-2 py-1 rounded border border-gray-100 inline-block">{row.getValue("orgCode")}</div>,
+  },
+  {
+    id: "verification",
+    header: "Verification",
+    cell: ({ row }) => {
+      const verified = row.original.verified as boolean;
+      return (
+        <Badge
+          variant="outline"
+          className={
+            verified
+              ? "bg-blue-50 text-blue-700 border-blue-200 rounded-lg px-2"
+              : "bg-amber-50 text-amber-700 border-amber-200 rounded-lg px-2"
+          }
+        >
+          {verified ? "Verified" : "Pending"}
+        </Badge>
+      );
+    },
   },
   {
     id: "hasCommission",
-    header: "Commission Set",
+    header: "Commission",
     cell: ({ row }) => {
       const hasCommission = row.original.hasCommission as boolean;
       return (
@@ -39,11 +70,11 @@ export const getMarketplaceColumns = (onView: (vendor: any) => void): ColumnDef<
           variant="outline"
           className={
             hasCommission
-              ? "bg-green-100 text-green-800 border-green-200 rounded-lg px-2"
-              : "bg-red-100 text-red-800 border-red-200 rounded-lg px-2"
+              ? "bg-green-50 text-green-700 border-green-200 rounded-lg px-2"
+              : "bg-red-50 text-red-700 border-red-200 rounded-lg px-2"
           }
         >
-          {hasCommission ? "Yes" : "No"}
+          {hasCommission ? "Set" : "Not Set"}
         </Badge>
       );
     },
@@ -58,13 +89,29 @@ export const getMarketplaceColumns = (onView: (vendor: any) => void): ColumnDef<
           variant="outline"
           className={
             active
-              ? "bg-green-100 text-green-800 border-green-200 rounded-lg px-2"
-              : "bg-red-100 text-red-800 border-red-200 rounded-lg px-2"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200 rounded-lg px-2"
+              : "bg-slate-50 text-slate-700 border-slate-200 rounded-lg px-2"
           }
         >
           <span className="mr-1">•</span>
-          {active ? "Enabled" : "Disabled"}
+          {active ? "Active" : "Disabled"}
         </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Date Joined",
+    cell: ({ row }) => {
+      const date = row.getValue("createdAt") as string;
+      return (
+        <div className="text-xs text-gray-600">
+          {date ? new Date(date).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          }) : "N/A"}
+        </div>
       );
     },
   },
@@ -73,14 +120,13 @@ export const getMarketplaceColumns = (onView: (vendor: any) => void): ColumnDef<
     header: "Action",
     cell: ({ row }) => {
       const vendor = row.original;
-      const hasFee = !!vendor.escrowFee;
 
       return (
         <div className="flex items-center gap-2 text-right">
           <Button
             variant="ghost"
             size="sm"
-            className="text-cyan-600 hover:bg-cyan-50 h-10 rounded-xl px-3"
+            className="text-primary hover:bg-orange-50 h-9 rounded-lg px-3"
             onClick={() => onView(vendor)}
           >
             View
@@ -103,6 +149,11 @@ export const getMarketplaceColumns = (onView: (vendor: any) => void): ColumnDef<
                 onClick={() => navigator.clipboard.writeText(vendor.id)}
               >
                 Copy Vendor ID
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigator.clipboard.writeText(vendor.orgCode)}
+              >
+                Copy Org Code
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
