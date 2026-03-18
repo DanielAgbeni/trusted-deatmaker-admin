@@ -5,11 +5,12 @@ import { Dispute, DisputesColumns } from "../_columns/disputes-table-column";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Filter, Download, Search, XCircle, Loader2 } from "lucide-react";
-import { useGetDisputesQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
-import { AdminDisputeListItem } from "@/lib/store/features/adminDashboardApi/adminDashboardTypes";
+import { useGetDisputeDashboardQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
+import { AdminDisputeDashboardListItem } from "@/lib/store/features/adminDashboardApi/adminDashboardTypes";
 import { useState, useEffect } from "react";
 import { DatePicker, ConfigProvider } from "antd";
 import dayjs from "dayjs";
+import { SortingState } from "@tanstack/react-table";
 
 const { RangePicker } = DatePicker;
 
@@ -25,11 +26,15 @@ export default function DisputeHistory() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState("all");
+  const [priority, setPriority] = useState("all");
+  const [tier, setTier] = useState("all");
+  const [dashboardFilter, setDashboardFilter] = useState("ALL");
   const [dateRange, setDateRange] = useState<[string, string]>(["", ""]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 20,
   });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   // Debouncing search
   useEffect(() => {
@@ -40,31 +45,47 @@ export default function DisputeHistory() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  const { data: disputesResponse, isLoading, isFetching, refetch } = useGetDisputesQuery({
+  const { data: dashboardResponse, isLoading, isFetching, refetch } = useGetDisputeDashboardQuery({
     page: pagination.pageIndex,
     size: pagination.pageSize,
     search: debouncedSearch.length > 0 ? debouncedSearch : undefined,
     status: status === "all" ? undefined : status,
+    priority: priority === "all" ? undefined : priority,
+    tier: tier === "all" ? undefined : tier,
+    filter: dashboardFilter as any,
     startDate: dateRange[0] || undefined,
     endDate: dateRange[1] || undefined,
+    sort: sorting.length > 0
+      ? sorting.map(s => `${s.id === 'dateTime' ? 'created_at' : s.id},${s.desc ? 'DESC' : 'ASC'}`)
+      : undefined,
   });
 
-  const mapDispute = (item: AdminDisputeListItem): Dispute => ({
-    id: item.disputeId,
-    transactionId: item.transactionReference,
+  const mapDispute = (item: AdminDisputeDashboardListItem): Dispute => ({
+    id: item.id,
+    disputeReference: item.disputeReference,
+    dealReference: item.dealReference,
+    dealId: item.dealId,
     dateTime: new Date(item.createdAt).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     }),
-    amount: item.amount,
-    buyerName: item.buyerName,
-    sellerName: item.sellerName,
+    dealAmount: item.dealAmount,
     preferredResolution: item.preferredResolution,
-    status: item.status as any,
+    currencyCode: item.currencyCode,
+    buyerName: item.claimant.name,
+    sellerName: item.respondent.name,
+    priority: item.priority,
+    status: item.status,
+    tier: item.tier,
+    sla: item.sla,
+    assignedAdmin: item.assignedAdmin ? {
+      name: item.assignedAdmin.name,
+      email: item.assignedAdmin.email,
+    } : null,
   });
 
-  const disputes: Dispute[] = disputesResponse?.data?.content?.map(mapDispute) || [];
+  const disputes: Dispute[] = dashboardResponse?.data?.disputes?.content?.map(mapDispute) || [];
 
   const handleExport = () => {
     // Implement export functionality
@@ -79,11 +100,14 @@ export default function DisputeHistory() {
   const handleClearFilters = () => {
     setSearch("");
     setStatus("all");
+    setPriority("all");
+    setTier("all");
+    setDashboardFilter("ALL");
     setDateRange(["", ""]);
     setPagination(prev => ({ ...prev, pageIndex: 0 }));
   };
 
-  const hasFilters = search || status !== "all" || dateRange[0];
+  const hasFilters = search || status !== "all" || priority !== "all" || tier !== "all" || dashboardFilter !== "ALL" || dateRange[0];
 
   return (
     <ConfigProvider
@@ -96,7 +120,7 @@ export default function DisputeHistory() {
     >
       <div className="space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-xl font-bold font-outfit">Dispute History</h2>
+          {/* <h2 className="text-xl font-bold font-outfit">Dispute History</h2> */}
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
@@ -113,8 +137,8 @@ export default function DisputeHistory() {
               setStatus(v);
               setPagination(prev => ({ ...prev, pageIndex: 0 }));
             }}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="All Status" />
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
@@ -126,11 +150,55 @@ export default function DisputeHistory() {
               </SelectContent>
             </Select>
 
+            <Select value={priority} onValueChange={(v) => {
+              setPriority(v);
+              setPagination(prev => ({ ...prev, pageIndex: 0 }));
+            }}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="STANDARD">Standard</SelectItem>
+                <SelectItem value="CRITICAL">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={tier} onValueChange={(v) => {
+              setTier(v);
+              setPagination(prev => ({ ...prev, pageIndex: 0 }));
+            }}>
+              <SelectTrigger className="w-[110px]">
+                <SelectValue placeholder="Tier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tiers</SelectItem>
+                <SelectItem value="TIER_1">Tier 1</SelectItem>
+                <SelectItem value="TIER_2">Tier 2</SelectItem>
+                <SelectItem value="TIER_3">Tier 3</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={dashboardFilter} onValueChange={(v) => {
+              setDashboardFilter(v);
+              setPagination(prev => ({ ...prev, pageIndex: 0 }));
+            }}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="View" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Active</SelectItem>
+                <SelectItem value="UNASSIGNED">Unassigned</SelectItem>
+                <SelectItem value="MONITORING">Monitoring</SelectItem>
+                <SelectItem value="MY_CASES">My Cases</SelectItem>
+              </SelectContent>
+            </Select>
+
             <RangePicker
               value={dateRange[0] ? [dayjs(dateRange[0]), dayjs(dateRange[1])] : null}
               onChange={handleDateChange}
               className="h-10 border-gray-200"
-              style={{ borderRadius: '8px' }}
+              style={{ borderRadius: '8px', width: '240px' }}
             />
 
             {hasFilters && (
@@ -167,7 +235,9 @@ export default function DisputeHistory() {
           isLoading={isLoading}
           pagination={pagination}
           onPaginationChange={setPagination}
-          pageCount={disputesResponse?.data?.totalPages ?? -1}
+          pageCount={dashboardResponse?.data?.pagination?.totalPages ?? -1}
+          onSortingChange={setSorting}
+          state={{ sorting }}
         />
       </div>
     </ConfigProvider>

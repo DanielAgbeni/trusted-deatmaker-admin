@@ -20,7 +20,15 @@ import type {
     AdminVendorDetails,
     CreateAdminStaffRequest,
     CreateRoleRequest,
-    ChangeAdminPasswordRequest
+    ChangeAdminPasswordRequest,
+    DisputeAnalytics,
+    DisputeDashboardResponse,
+    DisputeDashboardQueryParams,
+    AdminDisputeDashboardListItem,
+    AssignDisputeRequest,
+    ProposeResolutionRequest,
+    ProposeResolutionResponse,
+    GetDisputeMessagesResponse,
 } from './adminDashboardTypes';
 
 const baseQuery = fetchBaseQuery({
@@ -213,9 +221,83 @@ export const adminDashboardApi = createApi({
             providesTags: ['Disputes'],
         }),
 
-        getDisputeDetail: builder.query<ApiResponse<AdminDisputeDetail>, string>({
-            query: (id) => `/admin/disputes/${id}`,
+        getDisputeAnalytics: builder.query<ApiResponse<DisputeAnalytics>, { fromDate?: string; toDate?: string; tier?: string }>({
+            query: (params) => ({
+                url: '/admin/disputes/analytics',
+                params: {
+                    fromDate: params.fromDate,
+                    toDate: params.toDate,
+                    tier: params.tier,
+                },
+            }),
+            providesTags: ['Disputes'],
+        }),
+
+        getDisputeDashboard: builder.query<ApiResponse<DisputeDashboardResponse>, DisputeDashboardQueryParams>({
+            query: (params) => ({
+                url: '/admin/disputes/dashboard',
+                params: {
+                    filter: params.filter || 'ALL',
+                    status: params.status,
+                    priority: params.priority,
+                    tier: params.tier,
+                    assignedAdminId: params.assignedAdminId,
+                    searchTerm: params.search,
+                    fromDate: params.startDate,
+                    toDate: params.endDate,
+                    page: params.page || 0,
+                    size: params.size || 20,
+                    sort: params.sort || ['created_at,DESC'],
+                },
+            }),
+            providesTags: ['Disputes'],
+        }),
+
+        getDisputeDetail: builder.query<ApiResponse<DisputeDashboardResponse>, string>({
+            query: (id) => `/admin/disputes/dashboard?searchTerm=${id}`,
             providesTags: (result, error, id) => [{ type: 'Disputes', id }],
+        }),
+
+        getDisputeMessages: builder.query<ApiResponse<GetDisputeMessagesResponse>, { disputeId: string; page?: number; size?: number; sort?: string[] }>({
+            query: ({ disputeId, page = 0, size = 50, sort = ['createdAt,ASC'] }) => ({
+                url: `/disputes/${disputeId}/messages`,
+                params: { page, size, sort },
+            }),
+            providesTags: (result, error, { disputeId }) => [{ type: 'Disputes', id: `MESSAGES-${disputeId}` }],
+        }),
+
+        claimDispute: builder.mutation<ApiResponse<AdminDisputeDashboardListItem>, string>({
+            query: (disputeId) => ({
+                url: `/admin/disputes/${disputeId}/claim`,
+                method: 'POST',
+            }),
+            invalidatesTags: ['Disputes'],
+        }),
+
+        assignDispute: builder.mutation<ApiResponse<AdminDisputeDashboardListItem>, { disputeId: string; body: AssignDisputeRequest }>({
+            query: ({ disputeId, body }) => ({
+                url: `/admin/disputes/${disputeId}/assign`,
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['Disputes'],
+        }),
+
+        proposeResolution: builder.mutation<ApiResponse<ProposeResolutionResponse>, ProposeResolutionRequest>({
+            query: (body) => ({
+                url: `/admin/disputes/${body.disputeId}/resolve`,
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['Disputes'],
+        }),
+
+        confirmResolution: builder.mutation<ApiResponse<any>, string>({
+            query: (disputeId) => ({
+                url: `/admin/disputes/${disputeId}/confirm-resolution`,
+                method: 'POST',
+            }),
+            invalidatesTags: ['Disputes'],
         }),
 
         // --- Deals ---
@@ -407,6 +489,18 @@ export const adminDashboardApi = createApi({
         getPermissions: builder.query<ApiResponse<string[]>, void>({
             query: () => '/admin/management/permissions',
         }),
+
+        getStaffAccounts: builder.query<ApiResponse<PageableResponse<AdminStaff>>, QueryParams>({
+            query: (params) => ({
+                url: '/admin/admins',
+                params: {
+                    search: params.search,
+                    active: true,
+                    page: params.page || 0,
+                    size: params.size || 50,
+                },
+            }),
+        }),
     }),
 });
 
@@ -422,6 +516,13 @@ export const {
     useGetTransactionDetailQuery,
     useGetDisputesQuery,
     useGetDisputeDetailQuery,
+    useGetDisputeMessagesQuery,
+    useGetDisputeAnalyticsQuery,
+    useGetDisputeDashboardQuery,
+    useClaimDisputeMutation,
+    useAssignDisputeMutation,
+    useProposeResolutionMutation,
+    useConfirmResolutionMutation,
     useGetDealsQuery,
     useGetDealDetailQuery,
     useGetAuditLogsQuery,
@@ -438,5 +539,6 @@ export const {
     useGetRolesQuery,
     useCreateRoleMutation,
     useChangeAdminPasswordMutation,
-    useGetPermissionsQuery
+    useGetPermissionsQuery,
+    useGetStaffAccountsQuery,
 } = adminDashboardApi;

@@ -1,14 +1,9 @@
 import { GeneralStatCard } from "@/components/dashboard/stats-card";
-import { useGetDisputesQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
+import { useGetDisputeAnalyticsQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DisputeStats() {
-  const { data: allDisputes, isLoading: isLoadingAll } = useGetDisputesQuery({ size: 0 });
-  const { data: resolvedDisputes, isLoading: isLoadingResolved } = useGetDisputesQuery({ size: 0, status: 'RESOLVED' });
-  const { data: pendingDisputes, isLoading: isLoadingPending } = useGetDisputesQuery({ size: 0, status: 'PENDING' });
-  const { data: inProgressDisputes, isLoading: isLoadingInProgress } = useGetDisputesQuery({ size: 0, status: 'IN_PROGRESS' });
-
-  const isLoading = isLoadingAll || isLoadingResolved || isLoadingPending || isLoadingInProgress;
+  const { data: analyticsResponse, isLoading } = useGetDisputeAnalyticsQuery({});
 
   if (isLoading) {
     return (
@@ -24,26 +19,28 @@ export default function DisputeStats() {
     );
   }
 
+  const summary = analyticsResponse?.data?.summary;
+
   const stats = [
     {
-      title: "All Disputes",
-      value: allDisputes?.data?.totalElements.toString() || "0",
-      change: { value: "+0%", trend: "neutral" as const },
+      title: "Total Disputes",
+      value: summary?.totalDisputes.toString() || "0",
+      change: { value: "All time", trend: "neutral" as const },
     },
     {
       title: "Resolved Disputes",
-      value: resolvedDisputes?.data?.totalElements.toString() || "0",
-      change: { value: "0%", trend: "neutral" as const },
+      value: summary?.resolvedDisputes.toString() || "0",
+      change: { value: `${summary?.resolutionRate.toFixed(1) || 0}% rate`, trend: "up" as const },
     },
     {
-      title: "Pending Disputes",
-      value: pendingDisputes?.data?.totalElements.toString() || "0",
-      change: { value: "+0%", trend: "neutral" as const },
+      title: "SLA Compliance",
+      value: `${summary?.slaComplianceRate.toFixed(1) || 0}%`,
+      change: { value: "Target: 95%", trend: (summary?.slaComplianceRate || 0) >= 95 ? "up" as const : "down" as const },
     },
     {
-      title: "In Progress Disputes",
-      value: inProgressDisputes?.data?.totalElements.toString() || "0",
-      change: { value: "+0%", trend: "neutral" as const },
+      title: "Resolution Rate",
+      value: `${summary?.resolutionRate.toFixed(1) || 0}%`,
+      change: { value: "Overall rate", trend: "neutral" as const },
     },
   ];
 

@@ -48,6 +48,8 @@ interface DataTableProps<TData, TValue> {
     pageSize: number;
   };
   onPaginationChange?: (pagination: any) => void;
+  onSortingChange?: (sorting: any) => void;
+  state?: any;
 }
 
 export interface RecentTableContainerProps<TData, TValue> {
@@ -430,14 +432,17 @@ export function HistoryTable<TData, TValue>({
   skeletonRows = 5,
   ...props
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
+  
+  const sorting = props.state?.sorting ?? internalSorting;
+  const onSortingChange = props.onSortingChange ?? setInternalSorting;
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
+    onSortingChange: onSortingChange,
     getSortedRowModel: getSortedRowModel(),
     manualFiltering: true,
     manualPagination: true,
