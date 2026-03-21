@@ -137,21 +137,22 @@ export function DisputeMessagesDrawer({
                             {message.content}
                           </p>
                           {message.attachmentUrl && (
-                            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
-                              <span className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                                Attachment included
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                asChild
-                              >
-                                <a href={message.attachmentUrl} target="_blank" rel="noopener noreferrer">
-                                  <Download className="h-3 w-3 mr-1" />
-                                  <span className="text-xs">View</span>
-                                </a>
-                              </Button>
+                            <div className="mt-2 pt-2 border-t border-slate-100">
+                              <div className="rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+                                <img 
+                                  src={message.attachmentUrl} 
+                                  alt="Message attachment" 
+                                  className="w-full h-auto max-h-60 object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => {
+                                    if (message.attachmentUrl) {
+                                      window.open(message.attachmentUrl, '_blank');
+                                    }
+                                  }}
+                                />
+                              </div>
+                              <p className="text-[10px] text-slate-400 mt-1 text-center">
+                                Click image to view full size
+                              </p>
                             </div>
                           )}
                         </div>

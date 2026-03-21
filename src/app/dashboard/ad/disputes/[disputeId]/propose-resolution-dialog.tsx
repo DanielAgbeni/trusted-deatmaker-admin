@@ -81,9 +81,21 @@ export function ProposeResolutionDialog({
     };
 
     if (isTier3) {
+      if (arbitrationFeeType !== "NONE") {
+        const feeCap = dealAmount * 0.2;
+        if (arbitrationFeeAmount > feeCap) {
+          toast.error(`Arbitration fee cannot exceed 20% of deal amount (${feeCap.toLocaleString()})`);
+          return;
+        }
+      }
+
       payload.arbitrationFeeType = arbitrationFeeType;
-      payload.arbitrationFeeAmount = arbitrationFeeAmount;
-      payload.arbitrationFeePayer = arbitrationFeePayer;
+      
+      // Only send amount and payer if not internal
+      if (arbitrationFeeType !== "INTERNAL") {
+        payload.arbitrationFeeAmount = arbitrationFeeAmount;
+        payload.arbitrationFeePayer = arbitrationFeePayer;
+      }
     }
 
     try {
@@ -101,8 +113,8 @@ export function ProposeResolutionDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold font-outfit">
-            {isTier3 ? "Enforce Resolution" : "Propose Resolution"}
+          <DialogTitle className="text-xl font-bold font-outfit text-slate-900">
+            {isTier3 ? "Enforce arbitration decisions" : "Propose Resolution"}
           </DialogTitle>
           <DialogDescription>
             Determine the financial outcome for this dispute. This will be reviewed before execution.
@@ -193,36 +205,48 @@ export function ProposeResolutionDialog({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-1.5 w-full">
-                      <Label className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Fee Amount</Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-blue-400">₦</span>
-                        <Input
-                          type="number"
-                          className="h-9 text-sm bg-white pl-7"
-                          value={arbitrationFeeAmount}
-                          onChange={(e) => setArbitrationFeeAmount(parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
+                    {arbitrationFeeType !== "INTERNAL" && arbitrationFeeType !== "NONE" && (
+                      <>
+                        <div className="space-y-1.5 w-full animate-in slide-in-from-left-2 duration-300">
+                          <Label className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Fee Amount</Label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-blue-400">₦</span>
+                            <Input
+                              type="number"
+                              className="h-9 text-sm bg-white pl-7"
+                              value={arbitrationFeeAmount}
+                              onChange={(e) => setArbitrationFeeAmount(parseFloat(e.target.value) || 0)}
+                            />
+                          </div>
+                          <p className="text-[9px] text-blue-500 font-medium">Max: ₦{(dealAmount * 0.2).toLocaleString()} (20%)</p>
+                        </div>
+                        <div className="space-y-1.5 w-full animate-in slide-in-from-right-2 duration-300">
+                          <Label className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Fee Payer</Label>
+                          <Select
+                            value={arbitrationFeePayer}
+                            onValueChange={(val: any) => setArbitrationFeePayer(val)}
+                          >
+                            <SelectTrigger className="h-9 text-sm bg-white w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="BUYER">Buyer</SelectItem>
+                              <SelectItem value="SELLER">Seller</SelectItem>
+                              <SelectItem value="SPLIT_50_50">Split 50/50</SelectItem>
+                              <SelectItem value="PLATFORM_ABSORBS">Platform Absorbs</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {arbitrationFeeType === "INTERNAL" && (
+                    <div className="p-2 border border-blue-200 bg-blue-100/50 rounded-lg animate-in fade-in duration-500">
+                      <p className="text-[11px] text-blue-700 font-medium text-center">
+                        Internal arbitration fees are calculated and deducted automatically by the system.
+                      </p>
                     </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] text-blue-600 font-bold uppercase tracking-tight">Fee Payer</Label>
-                    <Select
-                      value={arbitrationFeePayer}
-                      onValueChange={(val: any) => setArbitrationFeePayer(val)}
-                    >
-                      <SelectTrigger className="h-9 text-sm bg-white w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="BUYER">Buyer</SelectItem>
-                        <SelectItem value="SELLER">Seller</SelectItem>
-                        <SelectItem value="SPLIT_50_50">Split 50/50</SelectItem>
-                        <SelectItem value="PLATFORM_ABSORBS">Platform Absorbs</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -258,7 +282,7 @@ export function ProposeResolutionDialog({
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isTier3 ? "Enforce Resolution" : "Propose Resolution"}
+            {isTier3 ? "Enforce arbitration decisions" : "Propose Resolution"}
           </Button>
         </DialogFooter>
       </DialogContent>

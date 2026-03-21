@@ -22,6 +22,7 @@ import {
   useGetDealDetailQuery,
   useClaimDisputeMutation,
   useConfirmResolutionMutation,
+  useGetDisputeMessagesQuery,
 } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
 import { toast } from "sonner";
 import { ProposeResolutionDialog } from "./propose-resolution-dialog";
@@ -101,9 +102,38 @@ interface DisputeDetail {
     note: string;
     createdAt: string;
   }>;
-  counterProposalResolution: any;
-  counterProposalRefundAmount: any;
-  counterProposalRefundPercentage: any;
+  resolutions: Array<{
+    id: string;
+    disputeId: string;
+    resolutionType: string;
+    resolvedByName: string;
+    financialAllocation: {
+      buyerReceives: number;
+      sellerReceives: number;
+      platformRetains: number;
+      totalAmount: number;
+    };
+    arbitrationFee: {
+      type: string;
+      amount: number;
+    } | null;
+    publicSummary: string;
+    adminNotes: string;
+    timeMetrics: {
+      timeInQueueMinutes: number;
+      timeToResolutionMinutes: number;
+      evidenceCountClaimant: number;
+      evidenceCountRespondent: number;
+    };
+    resolvedAt: string;
+    appliedAt: string | null;
+    buyerReceives: number;
+    sellerReceives: number;
+    arbitrationFeeType: string | null;
+    platformRetains: number;
+    arbitrationFeeAmount: number | null;
+    arbitrationFeePayer: string | null;
+  }>;
   tier2Proposal: {
     resolutionType: string;
     buyerReceives: number;
@@ -164,6 +194,11 @@ export default function DisputeDetailsPage() {
   const [isMessagesOpen, setIsMessagesOpen] = React.useState(false);
   const [claimDispute, { isLoading: isClaiming }] = useClaimDisputeMutation();
   const [confirmResolution, { isLoading: isConfirming }] = useConfirmResolutionMutation();
+  const { data: messagesResponse } = useGetDisputeMessagesQuery(
+    { disputeId: dispute?.id || "", page: 0, size: 1 },
+    { skip: !dispute?.id }
+  );
+  const totalMessages = messagesResponse?.data?.totalElements || 0;
 
   const handleClaim = async () => {
     if (!dispute?.id) return;
@@ -217,6 +252,10 @@ export default function DisputeDetailsPage() {
 
   const isAssigned = !!dispute.assignedAdmin;
   const isTier3 = dispute?.tier === 'TIER_3' || !!(dispute?.tier2Proposal && (dispute.tier2Proposal.buyerAccepted === false || dispute.tier2Proposal.sellerAccepted === false));
+
+  // Check if there's an unapplied resolution for Tier 3
+  const draftResolution = isTier3 ? (dispute.resolutions || []).find(r => r.appliedAt === null) : null;
+  const hasDraftResolution = !!draftResolution;
 
   return (
     <div className="container p-6 space-y-6 max-w-7xl mx-auto">
@@ -278,14 +317,26 @@ export default function DisputeDetailsPage() {
             </>
           ) : dispute.status !== 'RESOLVED' && dispute.status !== 'CLOSED' ? (
             <>
-              {(dispute.tier === 'TIER_3' || (dispute.tier2Proposal && (dispute.tier2Proposal.buyerAccepted === false || dispute.tier2Proposal.sellerAccepted === false))) ? (
-                <Button
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                  onClick={() => setIsResolutionOpen(true)}
-                  size="sm"
-                >
-                  Enforce Resolution
-                </Button>
+              {isTier3 ? (
+                hasDraftResolution ? (
+                  <Button
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                    onClick={handleConfirmResolution}
+                    disabled={isConfirming}
+                    size="sm"
+                  >
+                    {isConfirming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Confirm Resolution
+                  </Button>
+                ) : (
+                  <Button
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                    onClick={() => setIsResolutionOpen(true)}
+                    size="sm"
+                  >
+                    Enforce Resolution
+                  </Button>
+                )
               ) : dispute.tier2Proposal && dispute.tier2Proposal.buyerAccepted && dispute.tier2Proposal.sellerAccepted ? (
                 <Button
                   className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -522,33 +573,25 @@ export default function DisputeDetailsPage() {
             </div>
           </section>
 
-          {/* Evidence & Messages */}
+          {/* Communication Section Simplified */}
           <section>
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
               Communication
             </h2>
-            <div className="space-y-3 bg-slate-50 p-4 rounded-lg">
-              <div className="flex justify-between">
-                <span className="text-sm">Evidence (Buyer)</span>
-                <Badge variant="outline">{dispute.evidenceCountClaimant}</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Evidence (Seller)</span>
-                <Badge variant="outline">{dispute.evidenceCountRespondent}</Badge>
-              </div>
-              {/* {dispute.unreadMessageCount !== null && (
-                <div className="flex justify-between">
-                  <span className="text-sm">Unread Messages</span>
-                  <Badge variant="destructive">{dispute.unreadMessageCount}</Badge>
-                </div>
-              )} */}
+            <div className="bg-slate-50 p-4 rounded-lg">
               <Button
                 variant="outline"
-                className="w-full mt-2"
+                className="w-full flex items-center justify-between group transition-all"
                 size="sm"
                 onClick={() => setIsMessagesOpen(true)}
               >
-                View Messages & Evidence
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm">Dispute Messages</span>
+                </div>
+                <Badge variant="secondary" className="bg-blue-600 text-white group-hover:bg-blue-700">
+                  {totalMessages}
+                </Badge>
               </Button>
             </div>
           </section>
@@ -592,6 +635,41 @@ export default function DisputeDetailsPage() {
                   )}
                 </div>
               ))}
+
+              {/* Draft Resolution (Tier 3) */}
+              {draftResolution && (
+                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="flex justify-between items-center">
+                    <Badge className="bg-purple-600 font-outfit">Draft Resolution</Badge>
+                    <Badge variant="outline" className="bg-purple-100 uppercase text-[10px] font-bold">
+                      {draftResolution.resolutionType.replace(/_/g, " ")}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 space-y-1 text-sm">
+                    <p className="flex justify-between">
+                      <span className="text-muted-foreground">Buyer receives:</span>{" "}
+                      <span className="font-semibold">{dispute?.currencyCode} {draftResolution.buyerReceives?.toLocaleString()}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span className="text-muted-foreground">Seller receives:</span>{" "}
+                      <span className="font-semibold">{dispute?.currencyCode} {draftResolution.sellerReceives?.toLocaleString()}</span>
+                    </p>
+                    {draftResolution.arbitrationFee && (
+                      <p className="flex justify-between text-blue-600">
+                        <span>Arbitration Fee ({draftResolution.arbitrationFee.type}):</span>{" "}
+                        <span className="font-semibold">{dispute?.currencyCode} {draftResolution.arbitrationFee.amount?.toLocaleString()}</span>
+                      </p>
+                    )}
+                    <div className="mt-2 p-2 bg-white/50 rounded text-xs italic text-slate-600 border border-purple-100">
+                      "{draftResolution.publicSummary}"
+                    </div>
+                    <div className="flex justify-between text-[10px] mt-2 text-muted-foreground pt-2 border-t border-purple-100">
+                      <span>Proposed by:</span>
+                      <span className="font-medium text-slate-700">{draftResolution.resolvedByName}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Tier 2 Proposal */}
               {dispute?.tier2Proposal && (
