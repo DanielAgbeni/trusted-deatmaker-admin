@@ -2,154 +2,195 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Settings,
-  Bell,
-  Image,
-  CreditCard,
-  Building,
+  AppWindow,
   Wrench,
+  Bell,
+  CreditCard,
+  Landmark,
+  Search,
+  LayoutTemplate,
+  ClipboardList,
+  CircleDollarSign,
+  IdCard,
+  User,
+  Languages,
+  Component,
   Shield,
-  ArrowRightLeft,
-  Clock,
-  DollarSign,
-  Users,
-  FileText,
+  PenTool,
+  Cookie,
+  FileCode,
+  Gavel,
+  Wallet,
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface ConfigItem {
   title: string;
   description: string;
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number | string }>;
 }
 
 const configItems: ConfigItem[] = [
   {
-    title: "Dispute Resolution",
-    description: "Configure dispute handling and resolution processes",
-    href: "/dashboard/ad/config/dispute-resolution",
-    icon: Shield,
-    color: "bg-cyan-500",
+    title: "General Settings",
+    description: "Configure the fundamental information of the site",
+    href: "/dashboard/ad/config/general",
+    icon: Settings,
   },
   {
-    title: "Transaction Flow",
-    description: "Set up and manage transaction workflow configurations",
-    href: "/dashboard/ad/config/transaction-flow",
-    icon: ArrowRightLeft,
-    color: "bg-cyan-500",
+    title: "Logo and Favicon",
+    description: "Upload your logo and favicon here",
+    href: "#",
+    icon: AppWindow,
   },
   {
-    title: "System Timers",
-    description: "Configure timing settings for various system processes",
-    href: "/dashboard/ad/config/system-timers",
-    icon: Clock,
-    color: "bg-cyan-500",
+    title: "System Configuration",
+    description: "Control all of the basic modules of the system",
+    href: "/dashboard/ad/config/system-configuration",
+    icon: Wrench,
   },
   {
-    title: "Escrow Fees Configuration",
-    description: "Manage platform fees and commission rules",
-    href: "/dashboard/ad/config/currency-settings",
-    icon: DollarSign,
-    color: "bg-cyan-500",
+    title: "Notification Settings",
+    description: "Control and configure overall notification elements of the system",
+    href: "#",
+    icon: Bell,
   },
   {
-    title: "Social Login Credentials",
-    description: "Configure OAuth providers and social login integrations",
-    href: "/dashboard/ad/config/social-credentials",
-    icon: Users,
-    color: "bg-cyan-500",
-  },
-  {
-    title: "Payment Settings",
-    description: "Configure fees for deposit and withdrawal methods",
+    title: "Payment Gateways",
+    description: "Set up auto or manual payment gateways for user payments.",
     href: "/dashboard/ad/config/payments",
     icon: CreditCard,
-    color: "bg-cyan-500",
+  },
+  {
+    title: "Withdrawals Method",
+    description: "Add manual withdrawal methods for user payout requests.",
+    href: "/dashboard/ad/config/withdrawals",
+    icon: Landmark,
+  },
+  {
+    title: "SEO Configuration",
+    description: "Set meta titles, descriptions, and keywords for SEO.",
+    href: "/dashboard/ad/config/seo",
+    icon: Search,
+  },
+  {
+    title: "Manage Frontend",
+    description: "Manage all frontend content.",
+    href: "/dashboard/ad/config/manage-frontend",
+    icon: LayoutTemplate,
+  },
+  {
+    title: "Manage Pages",
+    description: "Manage dynamic and static pages",
+    href: "/dashboard/ad/config/manage-pages",
+    icon: ClipboardList,
+  },
+  {
+    title: "Charge Settings",
+    description: "Set your system charge here.",
+    href: "/dashboard/ad/config/currency-settings",
+    icon: CircleDollarSign,
+  },
+  {
+    title: "KYC Settings",
+    description: "Set the input field to collect client info if needed.",
+    href: "/dashboard/ad/config/kyc-settings",
+    icon: IdCard,
+  },
+  {
+    title: "Social Login Settings",
+    description: "Enter details to enable social media login.",
+    href: "/dashboard/ad/config/social-credentials",
+    icon: User,
+  },
+  {
+    title: "Language",
+    description: "Set your languages and keywords for localization.",
+    href: "/dashboard/ad/config/language-manager",
+    icon: Languages,
+  },
+  {
+    title: "Extensions",
+    description: "Manage extensions to add extra features.",
+    href: "/dashboard/ad/config/extensions",
+    icon: Component,
   },
   {
     title: "Policy Pages",
-    description: "Manage legal documents and policy content for your platform",
+    description: "Set your system policy and terms here.",
     href: "/dashboard/ad/config/policy-pages",
-    icon: FileText,
-    color: "bg-cyan-500",
+    icon: Shield,
   },
   {
-    title: "General Settings",
-    description: "Configure the fundamental information of the site",
-    href: "#",
-    icon: Settings,
-    color: "bg-cyan-500",
+    title: "Maintenance Mode",
+    description: "Toggle maintenance mode as needed.",
+    href: "/dashboard/ad/config/maintenance",
+    icon: PenTool,
   },
-  // {
-  //   title: "System Configuration",
-  //   description: "Control all of the basic modules of the system",
-  //   href: "#",
-  //   icon: Wrench,
-  //   color: "bg-cyan-500",
-  // },
-  // {
-  //   title: "Notification Settings",
-  //   description: "configure overall notification elements of the system",
-  //   href: "#",
-  //   icon: Bell,
-  //   color: "bg-cyan-500",
-  // },
+  {
+    title: "GDPR Cookie",
+    description: "Enable GDPR cookies to request visitor consent.",
+    href: "/dashboard/ad/config/gdpr-cookie",
+    icon: Cookie,
+  },
+  {
+    title: "Custom CSS",
+    description: "Add custom CSS to adjust frontend styles.",
+    href: "#",
+    icon: FileCode,
+  },
+  {
+    title: "Configure Dispute",
+    description: "Toggle Dispute resolution as needed.",
+    href: "/dashboard/ad/config/dispute-resolution",
+    icon: Gavel,
+  },
+  {
+    title: "Payment Time",
+    description: "Manage Payment time for different Transactions",
+    href: "/dashboard/ad/config/system-timers",
+    icon: Wallet,
+  },
+  {
+    title: "Manage Features",
+    description: "Manage Milestones, Bids, Orders e.t.c",
+    href: "/dashboard/ad/config/transaction-flow",
+    icon: SlidersHorizontal,
+  },
 ];
 
 export default function ConfigOverviewPage() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-            System Configurations
-          </h1>
-          <p className="text-gray-600">
-            Manage all system settings and configurations from one place
-          </p>
-        </div>
+    <div className="container mx-auto p-4 md:p-6 space-y-6">
+      <div className="mb-4">
+        <h1 className="text-[22px] font-semibold text-gray-900">
+          All Categories
+        </h1>
       </div>
 
-      <section className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {configItems.map((item, index) => (
             <Link key={index} href={item.href} className="group block">
-              <Card className="h-full transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border border-gray-200 group-hover:border-cyan-300 py-0">
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-4">
-                    <div
-                      className={`${item.color} p-3 rounded-lg flex-shrink-0`}
-                    >
-                      <item.icon className="w-6 h-6 text-white" />
+              <Card className="h-full border-none shadow-sm bg-[#f2f9fd] hover:bg-[#e6f4fa] transition-colors duration-200">
+                <CardContent className="p-5">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-[#0092ca] p-3.5 rounded-xl flex-shrink-0">
+                      <item.icon
+                        className="w-7 h-7 text-white"
+                        strokeWidth={1.5}
+                      />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1 group-hover:text-cyan-600 transition-colors">
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <h3 className="text-[17px] font-semibold text-gray-900 mb-1 group-hover:text-[#0092ca] transition-colors">
                         {item.title}
                       </h3>
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                      <p className="text-[14px] text-gray-500 leading-snug">
                         {item.description}
                       </p>
                     </div>
                   </div>
-
-                  {/* Subtle arrow indicator
-                  <div className="mt-4 flex justify-end">
-                    <div className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-cyan-100 flex items-center justify-center transition-colors">
-                      <svg
-                        className="w-3 h-3 text-gray-400 group-hover:text-cyan-600 transition-colors"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </div>
-                  </div> */}
                 </CardContent>
               </Card>
             </Link>

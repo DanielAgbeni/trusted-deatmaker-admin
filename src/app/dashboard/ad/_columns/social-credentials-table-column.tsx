@@ -4,15 +4,12 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Settings,
-  HelpCircle,
-  PowerOff,
-  Power,
   Copy,
   Eye,
   EyeOff,
 } from "lucide-react";
 import { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export interface SocialCredential {
   id: number;
@@ -64,43 +61,50 @@ const MaskedClientId = ({ clientId }: { clientId: string }) => {
   );
 };
 
-// Helper component for provider icons
-const ProviderIcon = ({ title }: { title: string }) => {
-  const getProviderColor = (provider: string) => {
-    switch (provider.toLowerCase()) {
-      case 'google':
-        return 'text-red-500';
-      case 'facebook':
-        return 'text-blue-600';
-      case 'linkedin':
-        return 'text-blue-700';
-      default:
-        return 'text-gray-500';
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-3">
-      <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 ${getProviderColor(title)}`}>
-        {title.charAt(0).toUpperCase()}
-      </div>
-      <span className="font-medium">{title}</span>
-    </div>
-  );
-};
+// Removed ProviderIcon since the design only shows plain bold text.
 
 export const createSocialCredentialColumns = (actions: SocialCredentialActions): ColumnDef<SocialCredential>[] => [
   {
+    id: "select",
+    header: ({ table }) => (
+      <div className="flex items-center gap-2">
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+          className="border-gray-300"
+        />
+        <span className="font-semibold text-gray-700">SL</span>
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+          className="border-gray-300"
+        />
+        <span className="text-blue-500 font-medium text-sm">{row.original.id}</span>
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
     accessorKey: "title",
-    header: "Title",
+    header: () => <span className="font-semibold text-gray-700">Title</span>,
     cell: ({ row }) => {
       const title = row.getValue("title") as string;
-      return <ProviderIcon title={title} />;
+      return <span className="font-bold text-gray-900">{title}</span>;
     },
   },
   {
     accessorKey: "clientId",
-    header: "Client ID",
+    header: () => <span className="font-semibold text-gray-700">Client ID</span>,
     cell: ({ row }) => {
       const clientId = row.getValue("clientId") as string;
       return <MaskedClientId clientId={clientId} />;
@@ -108,7 +112,7 @@ export const createSocialCredentialColumns = (actions: SocialCredentialActions):
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: () => <span className="font-semibold text-gray-700">Status</span>,
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
 
@@ -117,8 +121,8 @@ export const createSocialCredentialColumns = (actions: SocialCredentialActions):
           variant={status === "enabled" ? "default" : "secondary"}
           className={
             status === "enabled"
-              ? "bg-green-100 text-green-800 hover:bg-green-100"
-              : "bg-red-100 text-red-800 hover:bg-red-100"
+              ? "bg-green-100/80 text-green-600 hover:bg-green-100 shadow-none font-medium text-xs px-3 py-0.5"
+              : "bg-red-100/80 text-red-600 hover:bg-red-100 shadow-none font-medium text-xs px-3 py-0.5"
           }
         >
           • {status === "enabled" ? "Enabled" : "Disabled"}
@@ -128,54 +132,38 @@ export const createSocialCredentialColumns = (actions: SocialCredentialActions):
   },
   {
     id: "actions",
-    header: "Action",
+    header: () => <span className="font-semibold text-gray-700">Action</span>,
     enableHiding: false,
     cell: ({ row }) => {
       const credential = row.original;
 
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             variant="outline"
             size="sm"
-            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+            className="rounded-full h-8 px-4 text-xs font-medium text-slate-700 border-slate-400 hover:bg-slate-50"
             onClick={() => actions.onConfigure(credential)}
           >
-            <Settings className="h-4 w-4 mr-2" />
             Configure
           </Button>
 
           <Button
             variant="outline"
             size="sm"
-            className="text-gray-600 border-gray-200 hover:bg-gray-50"
+            className="rounded-full h-8 px-4 text-xs font-medium text-cyan-500 border-cyan-400 hover:bg-cyan-50"
             onClick={() => actions.onHelp(credential)}
           >
-            <HelpCircle className="h-4 w-4 mr-2" />
             Help
           </Button>
 
           <Button
             variant="outline"
             size="sm"
-            className={
-              credential.status === "enabled"
-                ? "text-red-600 border-red-200 hover:bg-red-50"
-                : "text-green-600 border-green-200 hover:bg-green-50"
-            }
+            className="rounded-full h-8 px-4 text-xs font-medium text-red-500 border-red-400 hover:bg-red-50"
             onClick={() => actions.onToggleStatus(credential)}
           >
-            {credential.status === "enabled" ? (
-              <>
-                <PowerOff className="h-4 w-4 mr-2" />
-                Disable
-              </>
-            ) : (
-              <>
-                <Power className="h-4 w-4 mr-2" />
-                Enable
-              </>
-            )}
+            {credential.status === "enabled" ? "Disable" : "Enable"}
           </Button>
         </div>
       );
