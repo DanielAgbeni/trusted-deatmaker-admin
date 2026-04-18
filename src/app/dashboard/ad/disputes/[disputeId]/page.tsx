@@ -1,764 +1,486 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import {
-  Loader2,
-  ArrowLeft,
-  ShieldAlert,
-  User,
-  Briefcase,
-  Clock,
-  FileText,
-  MessageSquare,
-  CheckCircle,
-  AlertCircle,
+    Loader2,
+    ArrowLeft,
+    MessageSquare,
+    CheckCircle2,
+    AlertCircle,
+    FileText,
+    Clock,
+    ChevronRight,
+    User,
+    ExternalLink,
+    AlertTriangle,
 } from "lucide-react";
 import {
-  useGetDisputeDetailQuery,
-  useGetDealDetailQuery,
-  useClaimDisputeMutation,
-  useConfirmResolutionMutation,
-  useGetDisputeMessagesQuery,
+    useGetDisputeDashboardQuery,
+    useGetDealDetailQuery,
+    useConfirmResolutionMutation,
 } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
 import { toast } from "sonner";
-import { ProposeResolutionDialog } from "./propose-resolution-dialog";
-import { AssignAdminDialog } from "./assign-admin-dialog";
 import { DisputeMessagesDrawer } from "./dispute-messages-drawer";
+import { cn } from "@/lib/utils";
 
-// Interface matching the actual API response
-interface DisputeDetail {
-  id: string;
-  openedBy: "BUYER" | "SELLER";
-  milestoneTitle: string;
-  disputeReference: string;
-  dealId: string;
-  dealReference: string;
-  dealAmount: number;
-  currencyCode: string;
-  status: string;
-  tier: string;
-  priority: string;
-  reason: string;
-  claimant: {
-    userId: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  respondent: {
-    userId: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  description: string;
-  preferredResolution: string;
-  requestedRefundAmount: number;
-  requestedRefundPercentage: number;
-  respondentResponse: string | null;
-  respondentRespondedAt: string | null;
-  assignedAdmin: {
-    adminId: string;
-    name: string;
-    email: string;
-  } | null;
-  assignedAt: string | null;
-  sla: {
-    deadline: string;
-    totalHours: number;
-    remainingMinutes: number;
-    remainingPercentage: number;
-    colorCode: string;
-    breached: boolean;
-    atRisk: boolean;
-  };
-  evidenceCountClaimant: number;
-  evidenceCountRespondent: number;
-  unreadMessageCount: number | null;
-  createdAt: string;
-  resolvedAt: string | null;
-  closedAt: string | null;
-  milestones: Array<{
-    id: string;
-    title: string;
-    amount: number;
-    status: string;
-    sequence: number;
-    description: string;
-    disputeReason: string;
-    disputed: boolean;
-  }>;
-  proposals: Array<{
-    id: string;
-    proposedBy: string;
-    resolutionType: string;
-    refundAmount: number;
-    payoutAmount: number;
-    status: string;
-    note: string;
-    createdAt: string;
-  }>;
-  resolutions: Array<{
-    id: string;
-    disputeId: string;
-    resolutionType: string;
-    resolvedByName: string;
-    financialAllocation: {
-      buyerReceives: number;
-      sellerReceives: number;
-      platformRetains: number;
-      totalAmount: number;
-    };
-    arbitrationFee: {
-      type: string;
-      amount: number;
-    } | null;
-    publicSummary: string;
+// Interface for Resolution Form
+interface ResolutionForm {
+    type: string;
+    totalAmount: number;
+    buyerAmount: number;
+    sellerAmount: number;
+    platformFee: number;
+    feePayer: string;
+    conditionDescription: string;
+    conditionDeadline: string;
+    arbitrationService: 'internal' | 'external';
+    arbitrationFeePayer: string;
     adminNotes: string;
-    timeMetrics: {
-      timeInQueueMinutes: number;
-      timeToResolutionMinutes: number;
-      evidenceCountClaimant: number;
-      evidenceCountRespondent: number;
-    };
-    resolvedAt: string;
-    appliedAt: string | null;
-    buyerReceives: number;
-    sellerReceives: number;
-    arbitrationFeeType: string | null;
-    platformRetains: number;
-    arbitrationFeeAmount: number | null;
-    arbitrationFeePayer: string | null;
-  }>;
-  tier2Proposal: {
-    resolutionType: string;
-    buyerReceives: number;
-    sellerReceives: number;
-    publicSummary: string;
-    consentDeadline: string;
-    buyerAccepted: boolean | null;
-    sellerAccepted: boolean | null;
-  } | null;
 }
 
-const getStatusStyle = (status: string) => {
-  switch (status) {
-    case "RESOLVED":
-    case "CLOSED":
-      return "bg-green-100 text-green-700 border-green-200";
-    case "OPEN":
-    case "ASSIGNED":
-      return "bg-blue-100 text-blue-700 border-blue-200";
-    case "NEGOTIATION":
-      return "bg-yellow-100 text-yellow-700 border-yellow-200";
-    case "ARBITRATION":
-      return "bg-purple-100 text-purple-700 border-purple-200";
-    default:
-      return "bg-gray-100 text-gray-700 border-gray-200";
-  }
-};
-
-const getPriorityStyle = (priority: string) => {
-  return priority === "CRITICAL"
-    ? "bg-red-100 text-red-700 border-red-200"
-    : "bg-slate-100 text-slate-700 border-slate-200";
-};
-
-const formatDateTime = (dateString: string) => {
-  return new Date(dateString).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-};
-
 export default function DisputeDetailsPage() {
-  const params = useParams();
-  const router = useRouter();
-  const disputeId = params.disputeId as string;
+    const params = useParams();
+    const router = useRouter();
+    const disputeId = params.disputeId as string;
 
-  const { data: disputeResponse, isLoading: isLoadingDispute, error: disputeError, refetch: refetchDispute } =
-    useGetDisputeDetailQuery(disputeId);
-  const dispute = disputeResponse?.data?.disputes?.content?.[0] as DisputeDetail | undefined;
+    const { data: dashboardResponse, isLoading: isLoadingDispute } = useGetDisputeDashboardQuery({ searchTerm: disputeId });
+    const dispute = dashboardResponse?.data?.disputes?.content?.[0] as any;
 
-  const { data: dealResponse } = useGetDealDetailQuery(dispute?.dealId || "", {
-    skip: !dispute?.dealId,
-  });
-  const deal = dealResponse?.data;
+    const { data: dealResponse } = useGetDealDetailQuery(dispute?.dealId || "", {
+        skip: !dispute?.dealId,
+    });
+    const deal = dealResponse?.data;
 
-  const [isResolutionOpen, setIsResolutionOpen] = React.useState(false);
-  const [isAssignOpen, setIsAssignOpen] = React.useState(false);
-  const [isMessagesOpen, setIsMessagesOpen] = React.useState(false);
-  const [claimDispute, { isLoading: isClaiming }] = useClaimDisputeMutation();
-  const [confirmResolution, { isLoading: isConfirming }] = useConfirmResolutionMutation();
-  const { data: messagesResponse } = useGetDisputeMessagesQuery(
-    { disputeId: dispute?.id || "", page: 0, size: 1 },
-    { skip: !dispute?.id }
-  );
-  const totalMessages = messagesResponse?.data?.totalElements || 0;
+    const [isMessagesOpen, setIsMessagesOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState("overview");
 
-  const handleClaim = async () => {
-    if (!dispute?.id) return;
-    try {
-      await claimDispute(dispute.id).unwrap();
-      toast.success("Dispute claimed successfully");
-      refetchDispute();
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to claim dispute");
+    const [form, setForm] = useState<ResolutionForm>({
+        type: "FULL_REFUND",
+        totalAmount: dispute?.dealAmount || 5000,
+        buyerAmount: dispute?.dealAmount || 5000,
+        sellerAmount: 0,
+        platformFee: 0,
+        feePayer: "Seller Pays Fee",
+        conditionDescription: "",
+        conditionDeadline: "",
+        arbitrationService: 'internal',
+        arbitrationFeePayer: "Seller Pays Arbitration",
+        adminNotes: "",
+    });
+
+    const [confirmResolution, { isLoading: isConfirming }] = useConfirmResolutionMutation();
+
+    const handleFormChange = (key: keyof ResolutionForm, value: any) => {
+        setForm(prev => {
+            const newForm = { ...prev, [key]: value };
+
+            // Auto-allocation logic for specific types
+            if (key === 'type') {
+                if (value === 'FULL_REFUND') {
+                    newForm.buyerAmount = newForm.totalAmount;
+                    newForm.sellerAmount = 0;
+                } else if (value === 'REJECT') {
+                    newForm.buyerAmount = 0;
+                    newForm.sellerAmount = newForm.totalAmount;
+                }
+            }
+
+            return newForm;
+        });
+    };
+
+    const handleSubmit = async () => {
+        if (!dispute?.id) return;
+        try {
+            await confirmResolution(dispute.id).unwrap();
+            toast.success("Resolution submitted successfully");
+        } catch (error: any) {
+            toast.error(error?.data?.message || "Failed to submit resolution");
+        }
+    };
+
+    if (isLoadingDispute) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+            </div>
+        );
     }
-  };
 
-  const handleConfirmResolution = async () => {
-    if (!dispute?.id) return;
-    try {
-      await confirmResolution(dispute.id).unwrap();
-      toast.success("Resolution confirmed successfully");
-      refetchDispute();
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to confirm resolution");
-    }
-  };
+    if (!dispute) return <div>Dispute not found</div>;
 
-  if (isLoadingDispute) {
+    const amountAllocated = form.buyerAmount + form.sellerAmount + form.platformFee;
+    const isAllocationCorrect = Math.abs(amountAllocated - form.totalAmount) < 0.01;
+
+    const arbitrationFee = form.arbitrationService === 'internal'
+        ? Math.min(Math.max(form.totalAmount * 0.02, 500), 5000)
+        : 10000;
+
+    const showConditionDetails = form.type === "REVISION" || form.type === "REPLACEMENT";
+
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <p className="text-muted-foreground animate-pulse">Fetching dispute details...</p>
-      </div>
-    );
-  }
-
-  if (disputeError || !dispute) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <ShieldAlert className="h-12 w-12 text-red-500" />
-        <h2 className="text-xl font-semibold text-gray-900">Dispute Not Found</h2>
-        <p className="text-muted-foreground max-w-xs text-center">
-          We couldn't find the dispute details you're looking for.
-        </p>
-        <Button onClick={() => router.back()} variant="outline" className="mt-2">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
-        </Button>
-      </div>
-    );
-  }
-
-  const openedByName = dispute.openedBy === "BUYER"
-    ? dispute?.claimant?.name
-    : dispute?.respondent?.name;
-
-  const isAssigned = !!dispute.assignedAdmin;
-  const isTier3 = dispute?.tier === 'TIER_3' || !!(dispute?.tier2Proposal && (dispute.tier2Proposal.buyerAccepted === false || dispute.tier2Proposal.sellerAccepted === false));
-
-  // Check if there's an unapplied resolution for Tier 3
-  const draftResolution = isTier3 ? (dispute.resolutions || []).find(r => r.appliedAt === null) : null;
-  const hasDraftResolution = !!draftResolution;
-
-  return (
-    <div className="container p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Header with actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="p-0 rounded-full hover:bg-slate-100"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back
-          </Button>
-          <div>
-            <h1 className="text-xl font-medium tracking-tight text-slate-900">
-              Dispute Details
-            </h1>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <Badge variant="outline" className="text-xs">
-                {dispute?.milestones?.[0]?.title}
-              </Badge>
-              <Badge variant="outline" className={getStatusStyle(dispute.status)}>
-                {dispute.status}
-              </Badge>
-              {dispute?.sla?.breached && (
-                <Badge variant="destructive" className="gap-1 text-xs">
-                  <AlertCircle className="h-3 w-3" /> SLA Breached
-                </Badge>
-              )}
-              {/* {dispute?.sla?.atRisk && !dispute?.sla?.breached && (
-                <Badge className="bg-orange-100 text-orange-700 gap-1 text-xs border-orange-200">
-                  <Clock className="h-3 w-3" /> At Risk
-                </Badge>
-              )} */}
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {!isAssigned ? (
-            <>
-              <Button
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={handleClaim}
-                disabled={isClaiming}
-                size="sm"
-              >
-                {isClaiming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Assign to myself
-              </Button>
-              <Button
-                variant="outline"
-                className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                onClick={() => setIsAssignOpen(true)}
-                size="sm"
-              >
-                Assign to Admin
-              </Button>
-            </>
-          ) : dispute.status !== 'RESOLVED' && dispute.status !== 'CLOSED' ? (
-            <>
-              {isTier3 ? (
-                hasDraftResolution ? (
-                  <Button
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                    onClick={handleConfirmResolution}
-                    disabled={isConfirming}
-                    size="sm"
-                  >
-                    {isConfirming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Confirm Resolution
-                  </Button>
-                ) : (
-                  <Button
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                    onClick={() => setIsResolutionOpen(true)}
-                    size="sm"
-                  >
-                    Enforce Resolution
-                  </Button>
-                )
-              ) : dispute.tier2Proposal && dispute.tier2Proposal.buyerAccepted && dispute.tier2Proposal.sellerAccepted ? (
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={handleConfirmResolution}
-                  disabled={isConfirming}
-                  size="sm"
-                >
-                  {isConfirming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Confirm Resolution
-                </Button>
-              ) : !dispute.tier2Proposal ? (
-                <Button
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  onClick={() => setIsResolutionOpen(true)}
-                  size="sm"
-                >
-                  Propose Resolution
-                </Button>
-              ) : null}
-            </>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Admin Assignment - minimal */}
-      <div className="flex items-start justify-between gap-4 py-3 border-b border-gray-100">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-full bg-blue-50">
-            <User className="h-5 w-5 text-blue-600" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Assigned Admin</p>
-            {dispute.assignedAdmin ? (
-              <div>
-                <p className="font-medium">{dispute.assignedAdmin.name}</p>
-                <p className="text-sm text-muted-foreground">{dispute.assignedAdmin.email}</p>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Unassigned</p>
-            )}
-          </div>
-        </div>
-        {dispute.assignedAdmin && (
-          <div className="flex flex-col items-end gap-1">
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              <CheckCircle className="h-3 w-3 mr-1" /> Claimed
-            </Badge>
-            {dispute.assignedAt && (
-              <p className="text-xs text-muted-foreground">
-                {formatDateTime(dispute.assignedAt)}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Two-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left column - Main details */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Parties Involved */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Parties Involved
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Buyer */}
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-slate-900 text-white">
-                    {dispute?.claimant?.name?.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-xs font-semibold text-blue-600 uppercase">Buyer</p>
-                  <p className="font-medium">{dispute?.claimant?.name}</p>
-                  <p className="text-sm text-muted-foreground break-all">{dispute?.claimant?.email}</p>
-                </div>
-              </div>
-
-              {/* Seller */}
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-orange-600 text-white">
-                    {dispute?.respondent?.name?.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-xs font-semibold text-orange-600 uppercase">Seller</p>
-                  <p className="font-medium">{dispute?.respondent?.name}</p>
-                  <p className="text-sm text-muted-foreground break-all">{dispute?.respondent?.email}</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Dispute Overview */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Dispute Overview
-            </h2>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-muted-foreground">Reason</p>
-                  <p className="font-medium capitalize">
-                    {dispute?.reason?.toLowerCase().replace(/_/g, " ")}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Dispute Amount</p>
-                  <p className="font-medium">
-                    {dispute?.currencyCode} {dispute?.dealAmount?.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Opened By</p>
-                  <p className="font-medium">{openedByName}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Opened On</p>
-                  <p className="font-medium">{formatDateTime(dispute?.createdAt)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Marketplace</p>
-                  <p className="font-medium">{deal?.vendorName || "TrustedDealMaker"}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Milestone</p>
-                  <p className="font-medium">{dispute?.milestoneTitle}</p>
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Description</p>
-                <div className="p-3 bg-gray-50 rounded-lg font-medium text-gray-700">
-                  {dispute?.description || "No description provided."}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Resolution Request */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Resolution Request
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-muted-foreground">Preferred Resolution</p>
-                <p className="font-medium capitalize">
-                  {dispute?.preferredResolution?.toLowerCase().replace(/_/g, " ")}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Requested Refund</p>
-                <p className="font-medium">
-                  {dispute?.currencyCode} {dispute?.requestedRefundAmount?.toLocaleString()}
-                  {dispute?.requestedRefundPercentage && (
-                    <span className="text-sm text-muted-foreground ml-1">
-                      ({dispute?.requestedRefundPercentage}%)
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Milestones */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Milestones
-            </h2>
-            <div className="divide-y border rounded-lg overflow-hidden">
-              {dispute?.milestones?.map((milestone) => (
-                <div
-                  key={milestone.id}
-                  className={`p-4 flex items-center justify-between ${milestone.disputed ? "bg-red-50" : ""
-                    }`}
-                >
-                  <div>
-                    <p className="font-medium">{milestone.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {milestone.description || "No description"}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">
-                      {dispute?.currencyCode} {milestone.amount}
-                    </p>
-                    <Badge
-                      variant="outline"
-                      className={
-                        milestone.status === "DISPUTED"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-green-100 text-green-700"
-                      }
+        <div className="min-h-screen bg-slate-50/50 p-6">
+            <div className="max-w-[1400px] mx-auto space-y-6">
+                <div className="flex flex-col gap-1">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => router.back()}
+                        className="w-fit p-0 h-auto text-slate-500 hover:bg-transparent hover:text-slate-700 font-medium"
                     >
-                      {milestone.status}
-                    </Badge>
-                  </div>
+                        <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back to Manage Dispute
+                    </Button>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm font-medium text-slate-400">Case ID: </span>
+                        <span className="text-sm font-bold text-slate-800">#{dispute.disputeReference} - {dispute.reason}</span>
+                    </div>
                 </div>
-              ))}
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    <div className="lg:col-span-7 space-y-6">
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <TabsList className="w-full bg-slate-50/50 border-b border-slate-200 h-14 justify-start px-0 overflow-x-auto">
+                                <TabsTrigger
+                                    value="overview"
+                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-cyan-500 data-[state=active]:bg-white h-full px-8 text-sm font-bold"
+                                >
+                                    Overview
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="evidence"
+                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-cyan-500 data-[state=active]:bg-white h-full px-8 text-sm font-bold"
+                                >
+                                    Evidence ({(dispute?.evidenceCountClaimant || 0) + (dispute?.evidenceCountRespondent || 0)})
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="timeline"
+                                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-cyan-500 data-[state=active]:bg-white h-full px-8 text-sm font-bold"
+                                >
+                                    Timeline
+                                </TabsTrigger>
+                            </TabsList>
+
+                            <div className="p-6">
+                                <TabsContent value="overview" className="mt-0 space-y-8">
+                                    <div className="space-y-4">
+                                        <h3 className="text-base font-bold text-slate-900">Buyer's Claim</h3>
+                                        <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100/50 space-y-2">
+                                            <p className="text-sm font-bold text-slate-800">{dispute.claimant?.name || "Unknown Buyer"}</p>
+                                            <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                                                {dispute.description || "The buyer reports that the product received does not match the description provided by the seller. The screen is damaged."}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h3 className="text-base font-bold text-slate-900">Seller's Defense</h3>
+                                        <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-100/50 space-y-2">
+                                            <p className="text-sm font-bold text-slate-800">{dispute.respondent?.name || "Unknown Seller"}</p>
+                                            <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                                                {dispute.respondentResponse || "The seller maintains that the product sent was exactly as described and was in good condition before shipping."}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h3 className="text-base font-bold text-slate-900">Transaction Details</h3>
+                                        <div className="bg-slate-50 border rounded-xl overflow-hidden">
+                                            <div className="flex justify-between items-center p-4 border-b">
+                                                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Product</span>
+                                                <span className="text-sm font-bold text-slate-800">{dispute.milestoneTitle || "HP Pavilion Laptop - 15.6\" Display, Intel Core i5"}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center p-4">
+                                                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Amount</span>
+                                                <span className="text-sm font-bold text-slate-800">
+                                                    {dispute.currencyCode} {dispute.dealAmount?.toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold h-10"
+                                        onClick={() => setIsMessagesOpen(true)}
+                                    >
+                                        Open Chat Section
+                                    </Button>
+                                </TabsContent>
+
+                                <TabsContent value="evidence" className="mt-0 space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {[1, 2, 3].map((item) => (
+                                            <div key={item} className="flex flex-col gap-3 group">
+                                                <div className="aspect-square bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative">
+                                                    <img
+                                                        src={`https://picsum.photos/seed/${item + 20}/400/400`}
+                                                        alt="Evidence"
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-sm font-bold text-slate-800 truncate">
+                                                        {item === 1 ? "Damaged laptop screen" : item === 2 ? "Packaging photos" : "WhatsApp Chat Log"}
+                                                    </p>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-[10px] text-slate-400 font-medium">By {item === 2 ? "Seller" : "Buyer"}</span>
+                                                        <span className="text-[10px] text-slate-400 font-medium">Recently</span>
+                                                    </div>
+                                                </div>
+                                                <Button variant="outline" size="sm" className="h-8 border-cyan-200 text-cyan-600 font-bold bg-cyan-50">
+                                                    View Full Size
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="timeline" className="mt-0">
+                                    <div className="space-y-6">
+                                        {[
+                                            { step: 1, title: "Order Placed", date: dispute.createdAt },
+                                            { step: 2, title: "Dispute Opened", date: dispute.createdAt },
+                                            { step: 3, title: "Tier 1 Negotiation Failed", date: dispute.createdAt },
+                                            { step: 4, title: "Escalated to Admin", date: dispute.createdAt },
+                                        ].map((event) => (
+                                            <div key={event.step} className="flex gap-4">
+                                                <div className="flex flex-col items-center">
+                                                    <div className="h-8 w-8 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold text-sm">
+                                                        {event.step}
+                                                    </div>
+                                                    {event.step !== 4 && <div className="w-0.5 h-full bg-slate-100 mt-1 mb-1" />}
+                                                </div>
+                                                <div className="pb-8">
+                                                    <h4 className="text-sm font-bold text-slate-800">{event.title}</h4>
+                                                    <p className="text-xs text-slate-400 font-medium mt-1">
+                                                        {new Date(event.date).toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </TabsContent>
+                            </div>
+                        </Tabs>
+                    </div>
+
+                    <div className="lg:col-span-5 space-y-6">
+                        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="p-6 space-y-8">
+                                <div className="text-center space-y-1">
+                                    <h2 className="text-lg font-bold text-slate-900">Enter Resolution</h2>
+                                    <div className="h-1 w-20 bg-cyan-400 mx-auto rounded-full" />
+                                </div>
+
+                                <RadioGroup value={form.type} onValueChange={(v) => handleFormChange('type', v)} className="space-y-2">
+                                    {[
+                                        { id: "FULL_REFUND", label: "Refund to Buyer" },
+                                        { id: "REVISION", label: "Revision (Service Redo)" },
+                                        { id: "REPLACEMENT", label: "Replacement (New Item)" },
+                                        { id: "CANCELLATION", label: "Cancellation" },
+                                        { id: "REJECT", label: "Reject Dispute" },
+                                    ].map((option) => (
+                                        <div key={option.id} className={cn(
+                                            "flex items-center space-x-3 border rounded-lg p-3 px-4 transition-colors cursor-pointer",
+                                            form.type === option.id ? "bg-blue-50 border-blue-200 ring-1 ring-blue-200" : "hover:bg-slate-50 border-slate-100"
+                                        )} onClick={() => handleFormChange('type', option.id)}>
+                                            <RadioGroupItem value={option.id} id={option.id} className="text-cyan-500" />
+                                            <Label htmlFor={option.id} className="flex-1 font-bold text-sm text-slate-700 cursor-pointer">{option.label}</Label>
+                                        </div>
+                                    ))}
+                                </RadioGroup>
+
+                                {form.type === "REVISION" && (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-3">
+                                        <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+                                        <p className="text-xs font-medium text-amber-700 leading-relaxed">
+                                            Warning: Revision is typically for services only. This is a Tangible Goods transaction.
+                                        </p>
+                                    </div>
+                                )}
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-sm font-bold text-slate-900 capitalize">Financial Allocation</h3>
+                                        {form.type === "FULL_REFUND" && (
+                                            <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none font-bold text-[10px]">
+                                                Locked
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase">Total Amount</Label>
+                                            <Input
+                                                type="number"
+                                                value={form.totalAmount}
+                                                onChange={(e) => handleFormChange('totalAmount', Number(e.target.value))}
+                                                className="bg-slate-50 border-slate-200 font-bold"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[10px] font-bold text-slate-400 uppercase">Buyer Amount</Label>
+                                                <Input
+                                                    type="number"
+                                                    value={form.buyerAmount}
+                                                    onChange={(e) => handleFormChange('buyerAmount', Number(e.target.value))}
+                                                    className="bg-slate-50 border-slate-200 font-bold"
+                                                    disabled={form.type === "FULL_REFUND"}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[10px] font-bold text-slate-400 uppercase">Seller Amount</Label>
+                                                <Input
+                                                    type="number"
+                                                    value={form.sellerAmount}
+                                                    onChange={(e) => handleFormChange('sellerAmount', Number(e.target.value))}
+                                                    className="bg-slate-50 border-slate-200 font-bold"
+                                                    disabled={form.type === "FULL_REFUND"}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase">Platform Fee</Label>
+                                            <Input
+                                                type="number"
+                                                value={form.platformFee}
+                                                onChange={(e) => handleFormChange('platformFee', Number(e.target.value))}
+                                                className="bg-slate-50 border-slate-200 font-bold"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase">Fee Payer</Label>
+                                            <div className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 px-4 text-sm font-medium text-slate-700 flex justify-between items-center cursor-pointer">
+                                                {form.feePayer}
+                                                <ChevronRight className="h-4 w-4 rotate-90 text-slate-400" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className={cn(
+                                        "flex items-center gap-2 p-3 rounded-lg border text-[11px] font-bold",
+                                        isAllocationCorrect ? "bg-green-100 border-green-200 text-green-700" : "bg-red-50 border-red-200 text-red-700"
+                                    )}>
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        Allocation {isAllocationCorrect ? 'correct' : 'incorrect'}: {dispute.currencyCode} {amountAllocated?.toLocaleString()}
+                                    </div>
+                                </div>
+
+                                {showConditionDetails && (
+                                    <div className="p-4 bg-amber-50/30 rounded-xl border border-amber-200 space-y-4">
+                                        <h3 className="text-sm font-bold text-slate-900">Condition Details</h3>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Condition Description * (min 20 characters)</Label>
+                                            <Textarea
+                                                placeholder="e.g. Repair fence blue, replace damaged parts, etc."
+                                                value={form.conditionDescription}
+                                                onChange={(e) => handleFormChange('conditionDescription', e.target.value)}
+                                                className="bg-white border-slate-200 min-h-[80px] resize-none text-sm placeholder:italic placeholder:text-slate-300"
+                                            />
+                                            <div className="flex justify-end">
+                                                <span className="text-[10px] font-medium text-slate-400">{form.conditionDescription.length}/20 characters</span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Condition Deadline * (3-90 days from now)</Label>
+                                            <Input
+                                                type="date"
+                                                value={form.conditionDeadline}
+                                                onChange={(e) => handleFormChange('conditionDeadline', e.target.value)}
+                                                className="bg-white border-slate-200 h-10 font-medium"
+                                                placeholder="dd/mm/yyyy"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-200 space-y-6">
+                                    <h3 className="text-sm font-bold text-slate-900 text-center">Arbitration Fee Calculator</h3>
+                                    <div className="space-y-4">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase">Arbitration Service</div>
+                                        <div className="flex bg-white p-1 rounded-lg border border-slate-100 shadow-sm">
+                                            <button
+                                                className={cn("flex-1 h-10 rounded-md text-xs font-bold transition-all", form.arbitrationService === 'internal' ? 'bg-cyan-500 text-white shadow-md' : 'text-slate-400 hover:text-slate-600')}
+                                                onClick={() => handleFormChange('arbitrationService', 'internal')}
+                                            >
+                                                Internal
+                                            </button>
+                                            <button
+                                                className={cn("flex-1 h-10 rounded-md text-xs font-bold transition-all", form.arbitrationService === 'external' ? 'bg-cyan-500 text-white shadow-md' : 'text-slate-400 hover:text-slate-600')}
+                                                onClick={() => handleFormChange('arbitrationService', 'external')}
+                                            >
+                                                External
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold text-slate-400 uppercase">Arbitration Fee Payer</Label>
+                                            <div className="w-full bg-white border border-slate-200 rounded-lg p-2.5 px-4 text-sm font-medium text-slate-700 flex justify-between items-center cursor-pointer">
+                                                {form.arbitrationFeePayer}
+                                                <ChevronRight className="h-4 w-4 rotate-90 text-slate-400" />
+                                            </div>
+                                        </div>
+                                        <div className="bg-white p-4 rounded-xl border border-cyan-100 shadow-sm flex justify-between items-end">
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase">Calculated Arbitration Fee:</p>
+                                                <p className="text-[10px] text-slate-400 font-medium italic">To be paid by: <span className="font-bold">seller</span></p>
+                                            </div>
+                                            <p className="text-lg font-bold text-cyan-500">₦{arbitrationFee.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-bold text-slate-400 uppercase">Admin Notes</Label>
+                                    <Textarea
+                                        placeholder="Explain your decision reasoning..."
+                                        className="bg-slate-50 border-slate-200 min-h-[80px] resize-none"
+                                        value={form.adminNotes}
+                                        onChange={(e) => handleFormChange('adminNotes', e.target.value)}
+                                    />
+                                </div>
+
+                                <Button
+                                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 shadow-lg shadow-emerald-100"
+                                    onClick={handleSubmit}
+                                    disabled={isConfirming || !isAllocationCorrect || (showConditionDetails && form.conditionDescription.length < 20)}
+                                >
+                                    Submit Decision
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-50 rounded-xl border border-slate-100 p-4 space-y-3">
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Time in Queue</span>
+                                <span className="text-sm font-bold text-slate-800">4 hours</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Evidence Items</span>
+                                <span className="text-sm font-bold text-slate-800">{(dispute?.evidenceCountClaimant || 0) + (dispute?.evidenceCountRespondent || 0)}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-t border-slate-200 pt-3">
+                                <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">SLA Remaining</span>
+                                <span className="text-sm font-bold text-red-500">{dispute.sla?.remainingTime || "Calculating..."}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </section>
+
+            <DisputeMessagesDrawer
+                disputeId={dispute.id}
+                isOpen={isMessagesOpen}
+                onOpenChange={setIsMessagesOpen}
+            />
         </div>
-
-        {/* Right column - Sidebar */}
-        <div className="space-y-8">
-          {/* SLA Info */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              SLA Status
-            </h2>
-            <div className="space-y-3 bg-slate-50 p-4 rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Deadline</span>
-                <span className="font-medium">{formatDateTime(dispute?.sla?.deadline)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Remaining</span>
-                <span className="font-medium">
-                  {Math.floor(dispute?.sla?.remainingMinutes / 60)}h{" "}
-                  {dispute?.sla?.remainingMinutes % 60}m
-                </span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span>Progress</span>
-                  <span>{dispute?.sla?.remainingPercentage}% remaining</span>
-                </div>
-                {/* Progress bar can be added later */}
-              </div>
-            </div>
-          </section>
-
-          {/* Communication Section Simplified */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Communication
-            </h2>
-            <div className="bg-slate-50 p-4 rounded-lg">
-              <Button
-                variant="outline"
-                className="w-full flex items-center justify-between group transition-all"
-                size="sm"
-                onClick={() => setIsMessagesOpen(true)}
-              >
-                <div className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm">Dispute Messages</span>
-                </div>
-                <Badge variant="secondary" className="bg-blue-600 text-white group-hover:bg-blue-700">
-                  {totalMessages}
-                </Badge>
-              </Button>
-            </div>
-          </section>
-
-          {/* Proposals */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Proposals
-            </h2>
-            <div className="space-y-3">
-              {/* Existing proposals */}
-              {dispute?.proposals?.map((proposal) => (
-                <div key={proposal.id} className="p-3 bg-slate-50 rounded-lg">
-                  <div className="flex justify-between items-start">
-                    <Badge variant="outline" className="bg-blue-50">
-                      {proposal.proposedBy}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={
-                        proposal.status === "PENDING"
-                          ? "bg-yellow-100"
-                          : proposal.status === "ACCEPTED"
-                            ? "bg-green-100"
-                            : "bg-gray-100"
-                      }
-                    >
-                      {proposal.status}
-                    </Badge>
-                  </div>
-                  <p className="text-sm font-medium mt-2 capitalize">
-                    {proposal.resolutionType.toLowerCase().replace(/_/g, " ")}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Refund: {dispute?.currencyCode} {proposal.refundAmount}
-                  </p>
-                  {proposal.note && (
-                    <p className="text-xs text-muted-foreground mt-1 italic">
-                      "{proposal.note}"
-                    </p>
-                  )}
-                </div>
-              ))}
-
-              {/* Draft Resolution (Tier 3) */}
-              {draftResolution && (
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="flex justify-between items-center">
-                    <Badge className="bg-purple-600 font-outfit">Draft Resolution</Badge>
-                    <Badge variant="outline" className="bg-purple-100 uppercase text-[10px] font-bold">
-                      {draftResolution.resolutionType.replace(/_/g, " ")}
-                    </Badge>
-                  </div>
-                  <div className="mt-3 space-y-1 text-sm">
-                    <p className="flex justify-between">
-                      <span className="text-muted-foreground">Buyer receives:</span>{" "}
-                      <span className="font-semibold">{dispute?.currencyCode} {draftResolution.buyerReceives?.toLocaleString()}</span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span className="text-muted-foreground">Seller receives:</span>{" "}
-                      <span className="font-semibold">{dispute?.currencyCode} {draftResolution.sellerReceives?.toLocaleString()}</span>
-                    </p>
-                    {draftResolution.arbitrationFee && (
-                      <p className="flex justify-between text-blue-600">
-                        <span>Arbitration Fee ({draftResolution.arbitrationFee.type}):</span>{" "}
-                        <span className="font-semibold">{dispute?.currencyCode} {draftResolution.arbitrationFee.amount?.toLocaleString()}</span>
-                      </p>
-                    )}
-                    <div className="mt-2 p-2 bg-white/50 rounded text-xs italic text-slate-600 border border-purple-100">
-                      "{draftResolution.publicSummary}"
-                    </div>
-                    <div className="flex justify-between text-[10px] mt-2 text-muted-foreground pt-2 border-t border-purple-100">
-                      <span>Proposed by:</span>
-                      <span className="font-medium text-slate-700">{draftResolution.resolvedByName}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tier 2 Proposal */}
-              {dispute?.tier2Proposal && (
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="flex justify-between items-center">
-                    <Badge className="bg-purple-600">Admin's Proposal</Badge>
-                    <Badge variant="outline" className="bg-purple-100">
-                      {dispute?.tier2Proposal?.resolutionType}
-                    </Badge>
-                  </div>
-                  <div className="mt-3 space-y-1 text-sm">
-                    <p>
-                      <span className="text-muted-foreground">Buyer receives:</span>{" "}
-                      {dispute?.currencyCode} {dispute?.tier2Proposal?.buyerReceives}
-                    </p>
-                    <p>
-                      <span className="text-muted-foreground">Seller receives:</span>{" "}
-                      {dispute?.currencyCode} {dispute?.tier2Proposal?.sellerReceives}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2 italic">
-                      "{dispute?.tier2Proposal?.publicSummary}"
-                    </p>
-                    <div className="flex justify-between text-xs mt-2">
-                      <span>Consent deadline:</span>
-                      <span className="font-medium">
-                        {formatDateTime(dispute?.tier2Proposal?.consentDeadline)}
-                      </span>
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      {dispute?.tier2Proposal?.buyerAccepted !== null && (
-                        <Badge
-                          variant="outline"
-                          className={
-                            dispute?.tier2Proposal?.buyerAccepted
-                              ? "bg-green-100"
-                              : "bg-red-100"
-                          }
-                        >
-                          Buyer: {dispute?.tier2Proposal?.buyerAccepted ? "Accepted" : "Rejected"}
-                        </Badge>
-                      )}
-                      {dispute?.tier2Proposal?.sellerAccepted !== null && (
-                        <Badge
-                          variant="outline"
-                          className={
-                            dispute?.tier2Proposal?.sellerAccepted
-                              ? "bg-green-100"
-                              : "bg-red-100"
-                          }
-                        >
-                          Seller: {dispute?.tier2Proposal?.sellerAccepted ? "Accepted" : "Rejected"}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {dispute?.proposals?.length === 0 && !dispute?.tier2Proposal && (
-                <p className="text-sm text-muted-foreground text-center py-4 bg-slate-50 rounded-lg">
-                  No proposals yet.
-                </p>
-              )}
-            </div>
-          </section>
-        </div>
-      </div>
-
-      {/* Dialogs */}
-      <ProposeResolutionDialog
-        disputeId={dispute?.id}
-        isOpen={isResolutionOpen}
-        onOpenChange={setIsResolutionOpen}
-        dealAmount={dispute?.dealAmount}
-        isTier3={isTier3}
-        onSuccess={() => refetchDispute()}
-      />
-
-      <AssignAdminDialog
-        disputeId={dispute?.id}
-        isOpen={isAssignOpen}
-        onOpenChange={setIsAssignOpen}
-      />
-
-      <DisputeMessagesDrawer
-        disputeId={dispute?.id}
-        isOpen={isMessagesOpen}
-        onOpenChange={setIsMessagesOpen}
-      />
-    </div>
-  );
+    );
 }

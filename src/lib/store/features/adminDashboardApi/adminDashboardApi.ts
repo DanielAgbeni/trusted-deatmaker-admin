@@ -253,8 +253,8 @@ export const adminDashboardApi = createApi({
             providesTags: ['Disputes'],
         }),
 
-        getDisputeDetail: builder.query<ApiResponse<DisputeDashboardResponse>, string>({
-            query: (id) => `/admin/disputes/dashboard?searchTerm=${id}`,
+        getDisputeDetail: builder.query<ApiResponse<AdminDisputeDetail>, string>({
+            query: (id) => `/admin/disputes/${id}`,
             providesTags: (result, error, id) => [{ type: 'Disputes', id }],
         }),
 

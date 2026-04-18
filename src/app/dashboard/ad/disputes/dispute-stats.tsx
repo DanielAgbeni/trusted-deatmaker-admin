@@ -7,8 +7,8 @@ export default function DisputeStats() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, index) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {[...Array(5)].map((_, index) => (
           <div key={index} className="p-6 rounded-xl border bg-card text-card-foreground shadow-sm space-y-2">
             <Skeleton className="h-4 w-[100px]" />
             <Skeleton className="h-8 w-[60px]" />
@@ -23,29 +23,34 @@ export default function DisputeStats() {
 
   const stats = [
     {
-      title: "Total Disputes",
+      title: "Total Cases",
       value: summary?.totalDisputes.toString() || "0",
-      change: { value: "All time", trend: "neutral" as const },
+      change: { value: "-0.03%", trend: "down" as const },
     },
     {
-      title: "Resolved Disputes",
-      value: summary?.resolvedDisputes.toString() || "0",
-      change: { value: `${summary?.resolutionRate.toFixed(1) || 0}% rate`, trend: "up" as const },
+      title: "Unassigned",
+      value: (summary?.openCount || 0).toString(),
+      change: { value: "-0.03%", trend: "down" as const },
     },
     {
-      title: "SLA Compliance",
-      value: `${summary?.slaComplianceRate.toFixed(1) || 0}%`,
-      change: { value: "Target: 95%", trend: (summary?.slaComplianceRate || 0) >= 95 ? "up" as const : "down" as const },
+      title: "My Cases",
+      value: (summary?.assignedCount || 0).toString(),
+      change: { value: "-0.03%", trend: "down" as const },
     },
     {
-      title: "Resolution Rate",
-      value: `${summary?.resolutionRate.toFixed(1) || 0}%`,
-      change: { value: "Overall rate", trend: "neutral" as const },
+      title: "Critical",
+      value: (summary?.atRiskCount || 0).toString(),
+      change: { value: "-0.03%", trend: "down" as const },
+    },
+    {
+      title: "SLA Breach Risk",
+      value: (summary?.breachedCount || 0).toString(),
+      change: { value: "-0.03%", trend: "down" as const },
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       {stats.map((stat, index) => (
         <GeneralStatCard
           key={stat.title}
@@ -58,3 +63,4 @@ export default function DisputeStats() {
     </div>
   );
 }
+

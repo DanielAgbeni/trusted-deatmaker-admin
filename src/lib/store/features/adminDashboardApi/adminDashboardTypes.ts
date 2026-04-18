@@ -192,16 +192,47 @@ export interface AdminDisputeListItem {
 
 export interface AdminDisputeDetail {
   id: string;
-  status: string;
-  reason: string;
-  description: string;
-  openedAt: string;
-  dealId: string;
+  disputeReference: string;
   dealReference: string;
-  disputeAmount: number;
-  openedBy: string;
-  vendorName: string;
-  assignedAdminId: string;
+  dealId: string;
+  milestoneTitle: string;
+  dealAmount: number;
+  amount: number;
+  currencyCode: string;
+  status: string;
+  tier: string;
+  priority: string;
+  reason: string;
+  description?: string;
+  respondentResponse?: string;
+  preferredResolution: string;
+  claimant: {
+    name: string;
+    email: string;
+  };
+  respondent: {
+    name: string;
+    email: string;
+  };
+  assignedAdmin: {
+    name: string;
+    email: string;
+  } | null;
+  createdAt: string;
+  deadline: string;
+  breached: boolean;
+  unreadMessages: number;
+  sla: {
+    breached: boolean;
+    atRisk: boolean;
+    deadline: string;
+    remainingTime: string;
+    remainingMinutes: number;
+    remainingPercentage: number;
+    colorCode: string;
+  };
+  evidenceCountClaimant: number;
+  evidenceCountRespondent: number;
   escalated: boolean;
 }
 
@@ -399,10 +430,10 @@ export interface DisputeDashboardResponse {
 }
 
 export interface DisputeDashboardQueryParams extends QueryParams {
-  filter?: 'ALL' | 'MY_CASES' | 'UNASSIGNED' | 'AT_RISK' | 'BREACHED' | 'RESOLVED';
-  status?: string;
-  priority?: string;
-  tier?: string;
+  filter?: 'ALL' | 'MY_CASES' | 'UNASSIGNED' | 'AT_RISK' | 'BREACHED' | 'RESOLVED' | 'MONITORING';
+  status?: 'OPEN' | 'NEGOTIATION' | 'ARBITRATION' | 'RESOLVED' | 'CLOSED' | 'UNASSIGNED' | 'ASSIGNED' | 'MONITORING' | 'RESOLUTION_FAILED' | 'CANCELLED';
+  priority?: 'STANDARD' | 'CRITICAL';
+  tier?: 'TIER_1' | 'TIER_2' | 'TIER_3';
   assignedAdminId?: string;
   searchTerm?: string;
   fromDate?: string;

@@ -25,8 +25,15 @@ interface ConfigItem {
 
 const configItems: ConfigItem[] = [
   {
-    title: "Dispute Resolution",
-    description: "Configure dispute handling and resolution processes",
+    title: "Dispute Configuration",
+    description: "Manage global dispute logic, timers, and arbitration rules",
+    href: "/dashboard/ad/config/dispute-config",
+    icon: Shield,
+    color: "bg-cyan-500",
+  },
+  {
+    title: "Dispute Options",
+    description: "Configure reasons and preferred resolution methods",
     href: "/dashboard/ad/config/dispute-resolution",
     icon: Shield,
     color: "bg-cyan-500",
