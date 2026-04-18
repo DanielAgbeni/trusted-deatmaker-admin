@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Plus, ArrowLeft } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { HistoryTable } from "@/components/dashboard/tables";
 import {
   PolicyPage,
@@ -321,80 +319,25 @@ export default function PolicyPagesPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Policy Pages
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Manage legal documents and policy content for your platform
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => window.history.back()}
-              className="text-gray-600 border-gray-200 hover:bg-gray-50"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <Button
-              onClick={handleCreateNew}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add New
-            </Button>
-          </div>
-        </div>
-
-        {/* Search and Statistics */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex-1 max-w-md">
-            <Input
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{policies.length}</div>
-              <div className="text-xs text-gray-500">Total Pages</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {policies.filter(p => p.status === "published").length}
-              </div>
-              <div className="text-xs text-gray-500">Published</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {policies.filter(p => p.status === "draft").length}
-              </div>
-              <div className="text-xs text-gray-500">Drafts</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {policies.filter(p => p.seoTitle && p.seoDescription).length}
-              </div>
-              <div className="text-xs text-gray-500">SEO Ready</div>
-            </div>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold text-gray-800">
+            Policy Pages
+          </h1>
+          <Button
+            onClick={handleCreateNew}
+            className="bg-[#0abbe3] hover:bg-[#09a0c3] text-white rounded-xl px-6 py-2 font-semibold"
+          >
+            Add New
+          </Button>
         </div>
 
         {/* Main Content */}
-        <Card>
-          <CardContent className="p-0">
-            <HistoryTable
-              columns={columns}
-              data={filteredPolicies}
-            />
-          </CardContent>
-        </Card>
+        <div className="w-full">
+          <HistoryTable
+            columns={columns}
+            data={filteredPolicies}
+          />
+        </div>
 
         {/* Policy Editor Dialog */}
         <PolicyEditorDialog
