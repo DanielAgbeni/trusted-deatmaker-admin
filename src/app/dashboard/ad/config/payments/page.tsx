@@ -1,90 +1,177 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { getPaymentFeesColumns } from "../../_columns/payment-fees-table-column";
-import { HistoryTable } from "@/components/dashboard/tables";
-import { useGetPaymentFeesQuery, useDeletePaymentFeeMutation } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
-import { PaymentDialog } from "./payment-dialog";
+import { useState } from "react";
+import Link from "next/link";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, CreditCard, RefreshCcw } from "lucide-react";
-import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronsUpDown, ChevronLeft } from "lucide-react";
 
-export default function PaymentConfigPage() {
-    const { data: response, isLoading, isFetching, refetch } = useGetPaymentFeesQuery({ page: 0, size: 50 });
-    const [deletePaymentFee] = useDeletePaymentFeeMutation();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedConfig, setSelectedConfig] = useState<any>(null);
+const autoGateways = [
+  { id: 1, sl: 1, name: "AMARAPAY", supportedCurrency: 1000, enabledCurrency: 1000, status: "Enabled" },
+  { id: 2, sl: 1, name: "AUTHORIZE.net", supportedCurrency: 1000, enabledCurrency: 1000, status: "Disabled" },
+  { id: 3, sl: 1, name: "AUTHORIZE.net", supportedCurrency: 1000, enabledCurrency: 1000, status: "Enabled" },
+  { id: 4, sl: 1, name: "AUTHORIZE.net", supportedCurrency: 1000, enabledCurrency: 1000, status: "Disabled" },
+  { id: 5, sl: 1, name: "AUTHORIZE.net", supportedCurrency: 1000, enabledCurrency: 1000, status: "Enabled" },
+  { id: 6, sl: 1, name: "AUTHORIZE.net", supportedCurrency: 1000, enabledCurrency: 1000, status: "Disabled" },
+  { id: 7, sl: 1, name: "AUTHORIZE.net", supportedCurrency: 1000, enabledCurrency: 1000, status: "Enabled" },
+];
 
-    const handleEdit = (config: any) => {
-        setSelectedConfig(config);
-        setIsDialogOpen(true);
-    };
+const manualGateways = [
+  { id: 1, sl: 1, name: "AMARAPAY", status: "Enabled" },
+  { id: 2, sl: 1, name: "AUTHORIZE.net", status: "Disabled" },
+  { id: 3, sl: 1, name: "AMARAPAY", status: "Enabled" },
+  { id: 4, sl: 1, name: "AUTHORIZE.net", status: "Disabled" },
+  { id: 5, sl: 1, name: "AMARAPAY", status: "Enabled" },
+  { id: 6, sl: 1, name: "AUTHORIZE.net", status: "Disabled" },
+  { id: 7, sl: 1, name: "AMARAPAY", status: "Enabled" },
+];
 
-    const handleDelete = async (id: string) => {
-        if (window.confirm("Are you sure you want to disable this payment fee?")) {
-            try {
-                await deletePaymentFee(id).unwrap();
-                toast.success("Payment fee disabled successfully");
-            } catch (error: any) {
-                toast.error(error?.data?.message || "Failed to disable payment fee");
-            }
-        }
-    };
+export default function PaymentGatewayPage() {
+  const [activeTab, setActiveTab] = useState<"automatic" | "manual">("automatic");
 
-    const handleAddNew = () => {
-        setSelectedConfig(null);
-        setIsDialogOpen(true);
-    };
-
-    const columns = useMemo(() => getPaymentFeesColumns(handleEdit, handleDelete), [handleEdit, deletePaymentFee]);
-    const data = response?.data?.content || [];
-
-    return (
-        <div className="container mx-auto p-4 md:p-8 space-y-8 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-3">
-                        <CreditCard className="h-8 w-8 text-cyan-600" />
-                        Payment Settings
-                    </h1>
-                    <p className="text-muted-foreground font-medium">
-                        Manage provider fees for deposit and withdrawal transactions.
-                    </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => refetch()}
-                        disabled={isFetching}
-                        className="rounded-xl h-12 w-12 border-gray-200 hover:bg-gray-50 active:scale-95 transition-all"
-                    >
-                        <RefreshCcw className={`h-5 w-5 text-gray-500 ${isFetching ? 'animate-spin' : ''}`} />
-                    </Button>
-                    <Button
-                        onClick={handleAddNew}
-                        className="bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl h-12 px-6 shadow-lg shadow-cyan-100 flex items-center gap-2 font-bold transition-all active:scale-95"
-                    >
-                        <Plus className="h-5 w-5" />
-                        Configure New Fee
-                    </Button>
-                </div>
-            </div>
-
-            <div className="bg-white rounded-[2rem] shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden transition-all hover:shadow-2xl hover:shadow-gray-200/50">
-                <HistoryTable
-                    columns={columns}
-                    data={data}
-                    isLoading={isLoading}
-                />
-            </div>
-
-            <PaymentDialog
-                isOpen={isDialogOpen}
-                onClose={() => setIsDialogOpen(false)}
-                config={selectedConfig}
-            />
+  return (
+    <div className="container mx-auto p-4 md:p-6 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Link
+        href="/dashboard/ad/config"
+        className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0ea5e9] transition-colors w-fit mb-6"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Back to categories
+      </Link>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        {/* Tabs Header - the background is light cyan-ish for the whole bar, except the active tab */}
+        <div className="flex bg-[#f2fbff] border-b border-gray-100 px-4 pt-4">
+          <button
+            onClick={() => setActiveTab("automatic")}
+            className={`px-6 py-3 font-medium text-[15px] rounded-t-xl transition-all ${
+              activeTab === "automatic"
+                ? "bg-white text-[#0ea5e9] shadow-[0_-2px_10px_rgba(0,0,0,0.02)]"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Automatic Gateway
+          </button>
+          <button
+            onClick={() => setActiveTab("manual")}
+            className={`px-6 py-3 font-medium text-[15px] rounded-t-xl transition-all ${
+              activeTab === "manual"
+                ? "bg-white text-[#0ea5e9] shadow-[0_-2px_10px_rgba(0,0,0,0.02)]"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Manual Gateway
+          </button>
         </div>
-    );
+
+        {/* Tab Content */}
+        <div className="p-6 md:p-8">
+          <h2 className="text-xl font-bold text-gray-800 mb-6">
+            {activeTab === "automatic" ? "Automatic Gateway" : "Manual Gateway"}
+          </h2>
+
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-gray-100 hover:bg-transparent">
+                  <TableHead className="font-bold text-gray-900 text-xs py-4 pl-4 w-24">
+                    <div className="flex items-center gap-2">
+                      <Checkbox className="border-gray-300 rounded-[4px]" />
+                      <span>SL</span>
+                      <ChevronsUpDown className="h-3 w-3 text-gray-400" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="font-bold text-gray-900 text-xs py-4">Gateway</TableHead>
+                  {activeTab === "automatic" && (
+                    <>
+                      <TableHead className="font-bold text-gray-900 text-xs py-4 text-center">Supported Currency</TableHead>
+                      <TableHead className="font-bold text-gray-900 text-xs py-4 text-center">Enabled Currency</TableHead>
+                    </>
+                  )}
+                  <TableHead className="font-bold text-gray-900 text-xs py-4 text-center">Status</TableHead>
+                  <TableHead className="font-bold text-gray-900 text-xs py-4 text-center">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(activeTab === "automatic" ? autoGateways : manualGateways).map((gateway, index) => (
+                  <TableRow key={index} className="border-b border-gray-50 hover:bg-gray-50/50">
+                    <TableCell className="pl-4 py-5 w-24">
+                      <div className="flex items-center gap-2">
+                        <Checkbox className="border-gray-300 rounded-[4px]" />
+                        <span className="text-[#0ea5e9] font-medium">{gateway.sl}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-5">
+                      <span className="font-bold text-gray-600 text-[13px] tracking-wide">{gateway.name}</span>
+                    </TableCell>
+                    
+                    {activeTab === "automatic" && (
+                      <>
+                        <TableCell className="py-5 text-center">
+                          <span className="font-bold text-gray-800">
+                            {('supportedCurrency' in gateway) ? (gateway.supportedCurrency as number) : ''}
+                          </span>
+                        </TableCell>
+                        <TableCell className="py-5 text-center">
+                          <span className="font-bold text-gray-800">
+                            {('enabledCurrency' in gateway) ? (gateway.enabledCurrency as number) : ''}
+                          </span>
+                        </TableCell>
+                      </>
+                    )}
+
+                    <TableCell className="py-5">
+                      <div className="flex justify-center">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-6 py-1 rounded-sm text-[12px] font-medium ${
+                            gateway.status === "Enabled"
+                              ? "bg-[#e8f7ed] text-[#42b76b]"
+                              : "bg-[#fdebea] text-[#ea5b5b]"
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            gateway.status === "Enabled" ? "bg-[#42b76b]" : "bg-[#ea5b5b]"
+                          }`} />
+                          {gateway.status}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="py-5">
+                      <div className="flex items-center justify-center gap-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-4 rounded-full border-[#0ea5e9] text-[#0ea5e9] hover:bg-[#0ea5e9] hover:text-white transition-colors bg-transparent text-[13px] font-medium"
+                        >
+                          Edit
+                        </Button>
+                        {gateway.status === "Enabled" ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-4 rounded-full border-[#ea5b5b] text-[#ea5b5b] hover:bg-[#ea5b5b] hover:text-white transition-colors bg-transparent text-[13px] font-medium"
+                          >
+                            Disable
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-4 rounded-full border-[#42b76b] text-[#42b76b] hover:bg-[#42b76b] hover:text-white transition-colors bg-transparent text-[13px] font-medium"
+                          >
+                            Enable
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
