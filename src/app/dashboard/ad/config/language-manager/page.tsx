@@ -8,9 +8,10 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown, ChevronLeft } from 'lucide-react';
 
 const languages = [
 	{ id: 1, sl: 1, name: 'English', code: 'EN', flag: '🇬🇧', status: 'Default' },
@@ -29,13 +30,22 @@ const languages = [
 export default function LanguageManagerPage() {
 	return (
 		<div className="container p-4 md:p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-			<div className="flex items-center justify-between mb-6">
-				<h1 className="text-[22px] font-semibold text-gray-900">
-					Language Manager
-				</h1>
-				<Button className="bg-[#0092ca] hover:bg-[#007dba] text-white rounded-md px-5 h-10 font-medium">
-					Add New
-				</Button>
+			<div className="flex flex-col gap-1 mb-6">
+				<Link
+					href="/dashboard/ad/config"
+					className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit"
+				>
+					<ChevronLeft className="w-4 h-4" />
+					Back to categories
+				</Link>
+				<div className="flex items-center justify-between">
+					<h1 className="text-[22px] font-semibold text-gray-900">
+						Language Manager
+					</h1>
+					<Button className="bg-[#0092ca] hover:bg-[#007dba] text-white rounded-md px-5 h-10 font-medium">
+						Add New
+					</Button>
+				</div>
 			</div>
 
 			<div className="bg-[#f8f9fa] border-l-4 border-black rounded-r-lg p-5 mb-8 text-gray-600 text-sm font-medium leading-relaxed">

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FolderUp, ShieldHalf } from "lucide-react";
+import { FolderUp, ShieldHalf, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -24,7 +25,16 @@ export default function AboutSectionPage() {
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <div className="bg-white rounded-md shadow-sm border p-6">
-        <h1 className="text-xl font-bold text-gray-800 mb-6">About Section</h1>
+        <div className="flex flex-col gap-1 mb-6">
+          <Link
+            href="/dashboard/ad/config/manage-frontend"
+            className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back to manage frontend
+          </Link>
+          <h1 className="text-xl font-bold text-gray-800">About Section</h1>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
           {/* Image Upload Area */}

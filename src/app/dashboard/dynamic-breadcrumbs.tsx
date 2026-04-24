@@ -19,11 +19,16 @@ export const DynamicBreadcrumb = () => {
       <BreadcrumbList>
         {breadcrumbs.map((item, index) => (
           <Fragment key={`${item.label}-${index}`}>
-            <BreadcrumbItem>
+            <BreadcrumbItem className="min-w-0">
               {item.isCurrentPage ? (
-                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                <BreadcrumbPage className="truncate max-w-[80px] sm:max-w-[300px] text-[10px] sm:text-sm">
+                  {item.label}
+                </BreadcrumbPage>
               ) : (
-                <BreadcrumbLink href={item.href || "#"}>
+                <BreadcrumbLink
+                  href={item.href || "#"}
+                  className="truncate max-w-[60px] sm:max-w-[200px] text-[10px] sm:text-sm"
+                >
                   {item.label}
                 </BreadcrumbLink>
               )}

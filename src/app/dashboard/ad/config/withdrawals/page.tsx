@@ -1,9 +1,10 @@
 "use client";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, ChevronLeft } from "lucide-react";
 
 const withdrawalMethods = [
   { id: 1, sl: 1, method: "Bank Transfer", currency: "PKR", charge: "$1.00 USD + $2.00 USD %", limit: "$1.00 USD + $2.00 USD %", status: "Enabled" },
@@ -18,7 +19,14 @@ const withdrawalMethods = [
 export default function WithdrawalMethodsPage() {
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="mb-6">
+      <div className="flex flex-col gap-1 mb-6">
+        <Link
+          href="/dashboard/ad/config"
+          className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to categories
+        </Link>
         <h1 className="text-[22px] font-semibold text-gray-900">
           Withdrawal Methods
         </h1>

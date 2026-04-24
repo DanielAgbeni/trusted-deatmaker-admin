@@ -4,6 +4,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -54,7 +55,7 @@ export const CategoriesColumns: ColumnDef<Category>[] = [
   {
     accessorKey: "id",
     header: "SL",
-    cell: ({ row }) => <div className="font-medium">{row.index + 1}</div>,
+    cell: ({ row }) => <div className="font-semibold text-cyan-600 pl-4">{row.index + 1}</div>,
   },
   {
     accessorKey: "name",
@@ -90,14 +91,15 @@ export const CategoriesColumns: ColumnDef<Category>[] = [
 
       return (
         <Badge
-          variant={status === "enabled" ? "default" : "secondary"}
-          className={
+          className={cn(
+            "rounded-md px-6 py-1 font-medium border-none shadow-none",
             status === "enabled"
-              ? "bg-green-100 text-green-800 hover:bg-green-100"
-              : "bg-red-100 text-red-800 hover:bg-red-100"
-          }
+              ? "bg-[#e8f7ed] text-[#42b76b]"
+              : "bg-[#fef4e8] text-[#f2994a]"
+          )}
         >
-          • {status === "enabled" ? "Enabled" : "Disabled"}
+          <span className={cn("w-1.5 h-1.5 rounded-full mr-2", status === "enabled" ? "bg-[#42b76b]" : "bg-[#f2994a]")} />
+          {status === "enabled" ? "Enabled" : "Disabled"}
         </Badge>
       );
     },
@@ -110,49 +112,37 @@ export const CategoriesColumns: ColumnDef<Category>[] = [
       const category = row.original as Category;
 
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
             variant="outline"
             size="sm"
-            className="text-cyan-600 border-cyan-200 hover:bg-cyan-50"
+            className="h-8 px-6 rounded-[4px] border-[#0092ca] text-[#0092ca] hover:bg-[#0092ca] hover:text-white transition-colors bg-transparent text-[13px] font-medium"
             onClick={() => {
-              // This will be handled by the parent component
               const event = new CustomEvent("editCategory", {
                 detail: category,
               });
               window.dispatchEvent(event);
             }}
           >
-            <Edit className="h-4 w-4 mr-1" />
             Edit
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className={
+            className={cn(
+              "h-8 px-5 rounded-[4px] transition-colors bg-transparent text-[13px] font-medium",
               category.status === "enabled"
-                ? "text-red-600 border-red-200 hover:bg-red-50"
-                : "text-green-600 border-green-200 hover:bg-green-50"
-            }
+                ? "border-[#ea5b5b] text-[#ea5b5b] hover:bg-[#ea5b5b] hover:text-white"
+                : "border-[#42b76b] text-[#42b76b] hover:bg-[#42b76b] hover:text-white"
+            )}
             onClick={() => {
-              // This will be handled by the parent component
               const event = new CustomEvent("toggleStatus", {
                 detail: category.id,
               });
               window.dispatchEvent(event);
             }}
           >
-            {category.status === "enabled" ? (
-              <>
-                <PowerOff className="h-4 w-4 mr-1" />
-                Disable
-              </>
-            ) : (
-              <>
-                <Power className="h-4 w-4 mr-1" />
-                Enable
-              </>
-            )}
+            {category.status === "enabled" ? "Disable" : "Enable"}
           </Button>
 
           <DropdownMenu>

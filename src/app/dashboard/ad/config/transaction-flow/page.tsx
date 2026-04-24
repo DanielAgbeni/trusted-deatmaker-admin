@@ -2,6 +2,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HistoryTable } from "@/components/dashboard/tables";
@@ -96,17 +98,24 @@ export default function TransactionFlowPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col gap-1">
+          <Link
+            href="/dashboard/ad/config"
+            className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back to categories
+          </Link>
+          <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold text-gray-900">
               Transaction Flow
             </h1>
+          </div>
+        </div>
             <p className="text-sm text-gray-600 mt-1">
               Monitor and manage transaction milestones, bids, orders, and
               payments
             </p>
-          </div>
-        </div>
 
         {/* Tabs */}
         <Tabs

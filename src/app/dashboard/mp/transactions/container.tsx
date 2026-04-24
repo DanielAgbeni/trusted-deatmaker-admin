@@ -118,10 +118,7 @@ export default function WalletContainer() {
 						hour: '2-digit',
 						minute: '2-digit',
 					})}`,
-				marketplace: {
-					name: 'Trusted Deal Maker',
-					logo: '/logos/tdm.png',
-				},
+				vendorReference: apiTx.transactionReference || 'N/A',
 				status: statusMap[apiTx.status] || apiTx.status || 'Pending',
 			};
 		});

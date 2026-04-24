@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, ChevronLeft } from 'lucide-react';
 
 const kycFields = [
 	{ id: 1, name: 'Full Name', type: 'Text', width: '100%', isRequired: true },
@@ -15,13 +16,22 @@ const kycFields = [
 export default function KycSettingsPage() {
 	return (
 		<div className="container p-4 md:p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-			<div className="flex items-center justify-between mb-6">
-				<h1 className="text-[22px] font-semibold text-gray-900">
-					KYC Settings
-				</h1>
-				<Button className="bg-[#0ea5e9] hover:bg-[#0284c7] text-white rounded-lg px-6 h-10 font-medium">
-					Add New
-				</Button>
+			<div className="flex flex-col gap-1 mb-6">
+				<Link
+					href="/dashboard/ad/config"
+					className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0ea5e9] transition-colors w-fit"
+				>
+					<ChevronLeft className="w-4 h-4" />
+					Back to categories
+				</Link>
+				<div className="flex items-center justify-between">
+					<h1 className="text-[22px] font-semibold text-gray-900">
+						KYC Settings
+					</h1>
+					<Button className="bg-[#0ea5e9] hover:bg-[#0284c7] text-white rounded-lg px-6 h-10 font-medium">
+						Add New
+					</Button>
+				</div>
 			</div>
 
 			<div className="space-y-4">

@@ -191,17 +191,48 @@ export interface AdminDisputeListItem {
 }
 
 export interface AdminDisputeDetail {
-  disputeId: string;
-  status: string;
-  reason: string;
-  description: string;
-  openedAt: string;
-  dealId: string;
+  id: string;
+  disputeReference: string;
   dealReference: string;
-  disputeAmount: number;
-  openedBy: string;
-  vendorName: string;
-  assignedAdminId: string;
+  dealId: string;
+  milestoneTitle: string;
+  dealAmount: number;
+  amount: number;
+  currencyCode: string;
+  status: string;
+  tier: string;
+  priority: string;
+  reason: string;
+  description?: string;
+  respondentResponse?: string;
+  preferredResolution: string;
+  claimant: {
+    name: string;
+    email: string;
+  };
+  respondent: {
+    name: string;
+    email: string;
+  };
+  assignedAdmin: {
+    name: string;
+    email: string;
+  } | null;
+  createdAt: string;
+  deadline: string;
+  breached: boolean;
+  unreadMessages: number;
+  sla: {
+    breached: boolean;
+    atRisk: boolean;
+    deadline: string;
+    remainingTime: string;
+    remainingMinutes: number;
+    remainingPercentage: number;
+    colorCode: string;
+  };
+  evidenceCountClaimant: number;
+  evidenceCountRespondent: number;
   escalated: boolean;
 }
 
@@ -323,6 +354,140 @@ export interface AdminVendorDetails {
     verificationStatus: string;
   };
   feeConfigurations: EscrowFeeConfig[];
+}
+
+export interface DisputeAnalytics {
+  summary: {
+    totalDisputes: number;
+    resolvedDisputes: number;
+    resolutionRate: number;
+    slaComplianceRate: number;
+    atRiskCount: number;
+    breachedCount: number;
+    openCount: number;
+    assignedCount: number;
+  };
+  byTier: Record<string, number>;
+  byPriority: Record<string, number>;
+}
+
+export interface AdminDisputeDashboardListItem {
+  id: string;
+  disputeReference: string;
+  dealReference: string;
+  dealId: string;
+  milestoneTitle: string;
+  dealAmount: number;
+  amount: number;
+  currencyCode: string;
+  status: string;
+  tier: string;
+  priority: string;
+  reason: string;
+  preferredResolution: string;
+  claimant: {
+    name: string;
+    email: string;
+  };
+  respondent: {
+    name: string;
+    email: string;
+  };
+  assignedAdmin: {
+    name: string;
+    email: string;
+  } | null;
+  createdAt: string;
+  deadline: string;
+  breached: boolean;
+  unreadMessages: number;
+  sla: {
+    breached: boolean;
+    atRisk: boolean;
+    deadline: string;
+    remainingTime: string;
+    remainingMinutes: number;
+    remainingPercentage: number;
+    colorCode: string;
+  };
+}
+
+export interface DisputeDashboardResponse {
+  disputes: PageableResponse<AdminDisputeDashboardListItem>;
+  summary: {
+    totalElements: number;
+    openCount: number;
+    assignedCount: number;
+    atRiskCount: number;
+    breachedCount: number;
+  };
+  pagination: {
+    totalPages: number;
+    totalElements: number;
+    page: number;
+    size: number;
+  };
+}
+
+export interface DisputeDashboardQueryParams extends QueryParams {
+  filter?: 'ALL' | 'MY_CASES' | 'UNASSIGNED' | 'AT_RISK' | 'BREACHED' | 'RESOLVED' | 'MONITORING';
+  status?: 'OPEN' | 'NEGOTIATION' | 'ARBITRATION' | 'RESOLVED' | 'CLOSED' | 'UNASSIGNED' | 'ASSIGNED' | 'MONITORING' | 'RESOLUTION_FAILED' | 'CANCELLED';
+  priority?: 'STANDARD' | 'CRITICAL';
+  tier?: 'TIER_1' | 'TIER_2' | 'TIER_3';
+  assignedAdminId?: string;
+  searchTerm?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
+export interface AssignDisputeRequest {
+  adminId: string;
+  reason?: string;
+}
+
+export interface ProposeResolutionRequest {
+  disputeId: string;
+  resolutionType: 'FULL_REFUND' | 'PARTIAL_REFUND' | 'REVISION' | 'REPLACEMENT' | 'CANCELLATION' | 'REJECT';
+  refundPercentage: number;
+  refundAmount: number;
+  arbitrationFeeType: 'INTERNAL' | 'EXTERNAL' | 'NONE';
+  arbitrationFeeAmount: number;
+  arbitrationFeePayer: 'BUYER' | 'SELLER' | 'SPLIT_50_50' | 'PLATFORM_ABSORBS';
+  adminNotes: string;
+  publicSummary: string;
+}
+
+export interface ProposeResolutionResponse {
+  id: string;
+  disputeId: string;
+  resolutionType: string;
+  buyerReceives: number;
+  sellerReceives: number;
+  arbitrationFee: {
+    amount: number;
+    payer: string;
+  };
+  status: string;
+}
+
+export interface GetDisputeMessagesResponse {
+  content: Array<{
+    id: string;
+    senderId: string;
+    senderName: string;
+    senderRole: string;
+    content: string;
+    attachmentUrl?: string | null;
+    attachments: Array<{
+      id: string;
+      fileName: string;
+      fileType: string;
+      fileUrl: string;
+    }>;
+    createdAt: string;
+  }>;
+  totalElements: number;
+  totalPages: number;
 }
 
 export type { AdminVendorDetails as VendorDetails };

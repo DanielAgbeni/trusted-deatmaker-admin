@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ChevronLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HistoryTable } from "@/components/dashboard/tables";
 import { createFeeColumns, FeeActions } from "../../_columns/fees-table-columns";
@@ -86,6 +87,13 @@ export default function FeesSettingsPage() {
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
           <div>
+            <Link
+              href="/dashboard/ad/config"
+              className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-cyan-600 transition-colors w-fit mb-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to categories
+            </Link>
             <h1 className="text-2xl font-semibold text-gray-900">
               Escrow Fees Configuration
             </h1>

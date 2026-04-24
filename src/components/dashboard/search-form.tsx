@@ -53,10 +53,10 @@ export function SearchForm({ ...props }: React.ComponentProps<"form">) {
 
   useEffect(() => {
     if (debouncedQuery && data?.data?.content) {
-       setResults(data.data.content as unknown as AuditLog[]);
-       setOpen(true);
+      setResults(data.data.content as unknown as AuditLog[]);
+      setOpen(true);
     } else if (!debouncedQuery) {
-        setResults([]);
+      setResults([]);
     }
   }, [data, debouncedQuery]);
 
@@ -109,7 +109,7 @@ export function SearchForm({ ...props }: React.ComponentProps<"form">) {
   }
 
   return (
-    <form {...props} className="relative w-full" onSubmit={(e) => e.preventDefault()}>
+    <form {...props} className="relative w-full max-w-[80px] sm:max-w-[200px] md:max-w-[240px]" onSubmit={(e) => e.preventDefault()}>
       <SidebarGroup className="py-0">
         <SidebarGroupContent className="relative" ref={containerRef}>
           <Label htmlFor="search" className="sr-only">
@@ -140,9 +140,9 @@ export function SearchForm({ ...props }: React.ComponentProps<"form">) {
                 size="icon"
                 className="absolute right-0 top-1/2 h-8 w-8 -translate-y-1/2 opacity-50 hover:bg-transparent"
                 onClick={() => {
-                    setSearchQuery("")
-                    setResults([])
-                    setOpen(false)
+                  setSearchQuery("")
+                  setResults([])
+                  setOpen(false)
                 }}
               >
                 <X className="size-4" />
@@ -153,46 +153,46 @@ export function SearchForm({ ...props }: React.ComponentProps<"form">) {
 
           {open && (searchQuery || results.length > 0) && (
             <div className="absolute top-full left-0 z-50 mt-1 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95">
-               <div className="max-h-[300px] overflow-y-auto p-1">
+              <div className="max-h-[300px] overflow-y-auto p-1">
                 {results.length === 0 && !loadingState ? (
-                    <div className="py-6 text-center text-sm text-muted-foreground">
-                        No results found.
-                    </div>
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    No results found.
+                  </div>
                 ) : (
-                    <div className="flex flex-col gap-1">
-                        {results.map((item) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left"
-                          >
-                            <div className="flex items-start gap-2 w-full">
-                                <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted">
-                                    {item.module === "USER" ? (
-                                        <User className="size-4" />
-                                    ) : item.module === "AUDIT" ? (
-                                        <AlertCircle className="size-4" />
-                                    ) : (
-                                        <FileText className="size-4" />
-                                    )}
-                                </div>
-                                <div className="flex flex-1 flex-col overflow-hidden">
-                                    <span className="truncate font-medium">
-                                        {highlightMatch(item.action, searchQuery)}
-                                    </span>
-                                    <span className="truncate text-xs text-muted-foreground">
-                                        {item.description}
-                                    </span>
-                                     <span className="truncate text-[10px] text-muted-foreground/70 mt-0.5">
-                                        {new Date(item.timestamp).toLocaleString()}
-                                    </span>
-                                </div>
-                            </div>
-                          </button>
-                        ))}
-                    </div>
+                  <div className="flex flex-col gap-1">
+                    {results.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full text-left"
+                      >
+                        <div className="flex items-start gap-2 w-full">
+                          <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted">
+                            {item.module === "USER" ? (
+                              <User className="size-4" />
+                            ) : item.module === "AUDIT" ? (
+                              <AlertCircle className="size-4" />
+                            ) : (
+                              <FileText className="size-4" />
+                            )}
+                          </div>
+                          <div className="flex flex-1 flex-col overflow-hidden">
+                            <span className="truncate font-medium">
+                              {highlightMatch(item.action, searchQuery)}
+                            </span>
+                            <span className="truncate text-xs text-muted-foreground">
+                              {item.description}
+                            </span>
+                            <span className="truncate text-[10px] text-muted-foreground/70 mt-0.5">
+                              {new Date(item.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 )}
-               </div>
+              </div>
             </div>
           )}
         </SidebarGroupContent>

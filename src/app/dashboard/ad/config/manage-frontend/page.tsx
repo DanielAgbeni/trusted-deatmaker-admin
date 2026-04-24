@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings } from "lucide-react";
+import { Settings, ChevronLeft } from "lucide-react";
 
 export default function ManageFrontendPage() {
   const sections = [
@@ -38,7 +38,14 @@ export default function ManageFrontendPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
-      <div className="mb-6 space-y-4">
+      <div className="mb-6 flex flex-col gap-1">
+        <Link
+          href="/dashboard/ad/config"
+          className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to categories
+        </Link>
         <h1 className="text-[22px] font-semibold text-gray-900">
           Manage Frontend Content
         </h1>

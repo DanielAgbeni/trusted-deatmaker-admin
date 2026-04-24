@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +39,14 @@ export default function GDPRCookiePage() {
 
   return (
     <div className="container mx-auto p-4 md:p-8 space-y-8 max-w-[1200px]">
-      <div className="mb-6">
+      <div className="flex flex-col gap-1 mb-6">
+        <Link
+          href="/dashboard/ad/config"
+          className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to categories
+        </Link>
         <h1 className="text-[22px] font-semibold text-gray-900">
           GDPR Cookie
         </h1>

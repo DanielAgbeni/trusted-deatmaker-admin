@@ -28,11 +28,8 @@ export interface Transaction {
   amount: string;
   type: string;
   dateTime: string;
-  marketplace: {
-    name: string;
-    logo: string;
-  };
-  status: "Completed" | "Pending" | "Failed";
+  vendorReference: string;
+  status: string;
 }
 
 export const TransactionsColumns: ColumnDef<Transaction>[] = [
@@ -82,7 +79,7 @@ export const TransactionsColumns: ColumnDef<Transaction>[] = [
         <div className="flex flex-col gap-1">
           <p className="font-medium text-sm">{transaction.buyerName}</p>
           <span className="text-muted-foreground text-xs">
-            @{transaction.buyerUsername}
+            {transaction.buyerUsername}
           </span>
         </div>
       );
@@ -97,7 +94,7 @@ export const TransactionsColumns: ColumnDef<Transaction>[] = [
         <div className="flex flex-col gap-1">
           <p className="font-medium text-sm">{transaction.sellerName}</p>
           <span className="text-muted-foreground text-xs">
-            @{transaction.sellerUsername}
+            {transaction.sellerUsername}
           </span>
         </div>
       );
@@ -154,27 +151,14 @@ export const TransactionsColumns: ColumnDef<Transaction>[] = [
     ),
   },
   {
-    accessorKey: "marketplace",
-    header: "Marketplace",
+    accessorKey: "vendorReference",
+    header: "Vendor Reference",
     cell: ({ row }) => {
-      const transaction = row.original;
-      const marketplace = transaction.marketplace;
-
+      const vendorRef = row.getValue("vendorReference") as string;
       return (
-        <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6">
-            <AvatarImage
-              src={marketplace?.logo || "/placeholder.svg"}
-              alt={marketplace?.name || "Marketplace logo"}
-            />
-            <AvatarFallback className="text-xs">
-              {marketplace?.name?.substring(0, 2).toUpperCase() || "MP"}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-sm text-muted-foreground">
-            ({marketplace?.name || "Unknown"})
-          </span>
-        </div>
+        <span className="text-sm font-medium text-muted-foreground">
+          {vendorRef || "N/A"}
+        </span>
       );
     },
   },
@@ -185,12 +169,17 @@ export const TransactionsColumns: ColumnDef<Transaction>[] = [
       const status = row.getValue("status") as string;
 
       const getStatusStyle = (status: string) => {
-        switch (status) {
-          case "Completed":
+        const s = status.toUpperCase();
+        switch (s) {
+          case "COMPLETED":
+          case "SUCCESS":
             return "bg-green-100 text-green-700 hover:bg-green-100";
-          case "Pending":
+          case "PENDING":
+          case "DRAFT":
+          case "OPEN":
             return "bg-yellow-100 text-yellow-700 hover:bg-yellow-100";
-          case "Failed":
+          case "FAILED":
+          case "CANCELLED":
             return "bg-red-100 text-red-700 hover:bg-red-100";
           default:
             return "bg-gray-100 text-gray-700 hover:bg-gray-100";
@@ -206,24 +195,12 @@ export const TransactionsColumns: ColumnDef<Transaction>[] = [
   },
   {
     id: "actions",
-    // header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
       const transaction = row.original;
 
       return (
         <div className="flex items-center gap-2">
-          {/* <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="text-blue-600 border-blue-300 hover:bg-blue-50"
-          >
-            <Link href={`/dashboard/transactions/${transaction.escrowNumber}`}>
-              Details
-            </Link>
-          </Button> */}
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
@@ -241,14 +218,10 @@ export const TransactionsColumns: ColumnDef<Transaction>[] = [
                 Copy escrow number
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>View buyer profile</DropdownMenuItem>
-              <DropdownMenuItem>View seller profile</DropdownMenuItem>
-              <DropdownMenuItem>View marketplace</DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <Link
-                  href={`/dashboard/ad/transactions/${transaction.escrowNumber}`}
-                  className="flex items-center gap-1"
+                  href={`/dashboard/ad/transactions/${transaction.id}`}
+                  className="flex items-center gap-1 w-full"
                 >
                   View full details
                 </Link>

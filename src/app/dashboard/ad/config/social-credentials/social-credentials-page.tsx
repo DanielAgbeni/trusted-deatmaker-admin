@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { HistoryTable } from '@/components/dashboard/tables';
 import { Badge } from '@/components/ui/badge';
@@ -18,7 +19,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { ExternalLink, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { ExternalLink, CheckCircle, AlertCircle, XCircle, ChevronLeft } from 'lucide-react';
 
 // Mock data matching the UI
 const initialCredentials: SocialCredential[] = [
@@ -218,6 +219,13 @@ export default function SocialCredentialsPage() {
 		<div className="container mx-auto p-6 space-y-6">
 			<div className="flex flex-col space-y-6">
 				<div>
+					<Link
+						href="/dashboard/ad/config"
+						className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit mb-2"
+					>
+						<ChevronLeft className="w-4 h-4" />
+						Back to categories
+					</Link>
 					<h1 className="text-2xl font-semibold text-gray-900 mb-6">
 						Social Login Credentials
 					</h1>

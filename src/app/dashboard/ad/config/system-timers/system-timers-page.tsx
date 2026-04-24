@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ChevronLeft } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -295,17 +297,26 @@ export default function SystemTimersPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          System Settings
-        </h1>
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={handleCreateNew}
-            className="bg-cyan-500 hover:bg-cyan-600 text-white"
-          >
-            Add New Timer
-          </Button>
+      <div className="flex flex-col gap-1">
+        <Link
+          href="/dashboard/ad/config"
+          className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-cyan-600 transition-colors w-fit"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to categories
+        </Link>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold text-gray-900">
+            System Settings
+          </h1>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleCreateNew}
+              className="bg-cyan-500 hover:bg-cyan-600 text-white"
+            >
+              Add New Timer
+            </Button>
+          </div>
         </div>
       </div>
 

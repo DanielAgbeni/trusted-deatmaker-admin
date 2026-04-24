@@ -59,17 +59,17 @@ export function CategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center text-lg font-semibold">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-none shadow-lg">
+        <DialogHeader className="pt-8 pb-4">
+          <DialogTitle className="text-center text-[20px] font-bold text-gray-800">
             {category ? "Update Category" : "Create New Category"}
           </DialogTitle>
-          <div className="w-16 h-0.5 bg-cyan-500 mx-auto mt-2"></div>
+          <div className="w-[30%] h-[3px] bg-[#0092ca] mx-auto mt-2 rounded-full"></div>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="px-8 pb-8 space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium">
+            <Label htmlFor="name" className="text-[15px] font-semibold text-gray-700">
               Name
             </Label>
             <Input
@@ -77,12 +77,12 @@ export function CategoryDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter category name"
-              className="w-full"
+              className="w-full h-11 rounded-md border-gray-200 focus:border-[#0092ca] focus:ring-[#0092ca] placeholder:text-gray-400"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium">
+            <Label htmlFor="description" className="text-[15px] font-semibold text-gray-700">
               Description
             </Label>
             <Textarea
@@ -90,18 +90,18 @@ export function CategoryDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter category description"
-              className="w-full min-h-[120px] resize-none"
+              className="w-full min-h-[160px] rounded-md border-gray-200 focus:border-[#0092ca] focus:ring-[#0092ca] placeholder:text-gray-400 resize-none leading-relaxed"
             />
           </div>
-        </div>
 
-        <Button
-          onClick={handleSave}
-          className="w-full bg-cyan-500 hover:bg-cyan-600 text-white"
-          disabled={!name.trim() || !description.trim()}
-        >
-          {category ? "Update Category" : "Create Category"}
-        </Button>
+          <Button
+            onClick={handleSave}
+            className="w-full bg-[#0092ca] hover:bg-[#007ba8] text-white h-12 text-[16px] font-semibold rounded-md shadow-sm transition-all duration-200 mt-2"
+            disabled={!name.trim() || !description.trim()}
+          >
+            {category ? "Update Category" : "Create Category"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

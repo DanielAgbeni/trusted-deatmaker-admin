@@ -4,14 +4,24 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X, FolderUp } from "lucide-react";
+import { X, FolderUp, ChevronLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function PageSeoSettings() {
     const [keywords] = useState(["Joshua", "Joshua", "Joshua", "Joshua", "Joshua"]);
     
     return (
         <div className="container p-4 md:p-6 space-y-8">
-            <h1 className="text-[22px] font-semibold text-gray-900">SEO Configuration for HomePage</h1>
+            <div className="flex flex-col gap-1">
+                <Link
+                    href="/dashboard/ad/config/manage-pages"
+                    className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit"
+                >
+                    <ChevronLeft className="w-4 h-4" />
+                    Back to manage pages
+                </Link>
+                <h1 className="text-[22px] font-semibold text-gray-900">SEO Configuration for HomePage</h1>
+            </div>
             
             {/* Info Message Box */}
             <div className="bg-[#f6f9fc] border-l-[6px] border-black p-5 rounded-md text-gray-700 text-[15.5px] leading-relaxed break-words shadow-sm">

@@ -33,6 +33,18 @@ interface ConfigItem {
 
 const configItems: ConfigItem[] = [
   {
+    title: "Dispute Configuration",
+    description: "Manage global dispute logic, timers, and arbitration rules",
+    href: "/dashboard/ad/config/dispute-config",
+    icon: Shield,
+  },
+  {
+    title: "Dispute Options",
+    description: "Configure reasons and preferred resolution methods",
+    href: "/dashboard/ad/config/dispute-resolution",
+    icon: Shield,
+  },
+  {
     title: "General Settings",
     description: "Configure the fundamental information of the site",
     href: "/dashboard/ad/config/general",
@@ -41,7 +53,7 @@ const configItems: ConfigItem[] = [
   {
     title: "Logo and Favicon",
     description: "Upload your logo and favicon here",
-    href: "#",
+    href: "/dashboard/ad/config/logo-favicon",
     icon: AppWindow,
   },
   {
@@ -193,7 +205,7 @@ export default function ConfigOverviewPage() {
                   </div>
                 </CardContent>
               </Card>
-            </Link>
+            </Link> 
           ))}
         </div>
       </section>

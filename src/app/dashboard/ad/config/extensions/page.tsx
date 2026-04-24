@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { HistoryTable } from '@/components/dashboard/tables';
 import {
 	Extension,
@@ -16,7 +17,7 @@ import {
 	DialogTitle,
 	DialogFooter,
 } from '@/components/ui/dialog';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // Mock data matching the UI
@@ -111,6 +112,13 @@ export default function ExtensionsPage() {
 		<div className="container  p-4 md:p-6 space-y-6">
 			<div className="flex flex-col space-y-6">
 				<div>
+					<Link
+						href="/dashboard/ad/config"
+						className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit mb-2"
+					>
+						<ChevronLeft className="w-4 h-4" />
+						Back to categories
+					</Link>
 					<h1 className="text-[22px] font-semibold text-gray-900 mb-6">
 						Extensions
 					</h1>

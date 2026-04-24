@@ -14,6 +14,7 @@ export interface ChargeRange {
   percentCharge: number;
   chargeCap: number;
   marketplaceId: string;
+  type: "VENDOR_COMMISSION" | "PLATFORM_FEE";
 }
 
 export const ChargeRangeColumns: ColumnDef<ChargeRange>[] = [
@@ -38,6 +39,25 @@ export const ChargeRangeColumns: ColumnDef<ChargeRange>[] = [
     cell: ({ row }) => {
       const amount = row.getValue("maximumAmount") as number;
       return <div className="font-medium">₦{amount.toLocaleString()}.00</div>;
+    },
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => {
+      const type = row.getValue("type") as string;
+      return (
+        <Badge
+          variant="outline"
+          className={
+            type === "VENDOR_COMMISSION"
+              ? "bg-blue-100 text-blue-700 border-blue-200"
+              : "bg-purple-100 text-purple-700 border-purple-200"
+          }
+        >
+          {type === "VENDOR_COMMISSION" ? "COMMISSION" : "PLATFORM FEE"}
+        </Badge>
+      );
     },
   },
   {

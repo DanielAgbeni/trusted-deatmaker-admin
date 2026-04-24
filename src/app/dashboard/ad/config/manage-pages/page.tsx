@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown, ChevronLeft } from 'lucide-react';
 
 export default function ManagePages() {
 	const pages = [
@@ -23,13 +23,22 @@ export default function ManagePages() {
 	return (
 		<div className="container p-4 md:p-6 space-y-6">
 			{/* Header Section */}
-			<div className="flex justify-between items-center mb-6">
-				<h1 className="text-[22px] font-semibold text-gray-900">
-					Manage Pages
-				</h1>
-				<Button className="bg-[#0092ca] hover:bg-[#007da8] text-white px-6 rounded-lg font-medium shadow-none">
-					Add New
-				</Button>
+			<div className="flex flex-col gap-1 mb-6">
+				<Link
+					href="/dashboard/ad/config"
+					className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0092ca] transition-colors w-fit"
+				>
+					<ChevronLeft className="w-4 h-4" />
+					Back to categories
+				</Link>
+				<div className="flex justify-between items-center">
+					<h1 className="text-[22px] font-semibold text-gray-900">
+						Manage Pages
+					</h1>
+					<Button className="bg-[#0092ca] hover:bg-[#007da8] text-white px-6 rounded-lg font-medium shadow-none">
+						Add New
+					</Button>
+				</div>
 			</div>
 
 			<div className="border-t border-gray-200 w-full mb-6 mt-[-10px]"></div>

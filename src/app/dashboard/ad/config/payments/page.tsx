@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, ChevronLeft } from "lucide-react";
 
 const autoGateways = [
   { id: 1, sl: 1, name: "AMARAPAY", supportedCurrency: 1000, enabledCurrency: 1000, status: "Enabled" },
@@ -31,6 +32,13 @@ export default function PaymentGatewayPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Link
+        href="/dashboard/ad/config"
+        className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0ea5e9] transition-colors w-fit mb-6"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Back to categories
+      </Link>
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Tabs Header - the background is light cyan-ish for the whole bar, except the active tab */}
         <div className="flex bg-[#f2fbff] border-b border-gray-100 px-4 pt-4">

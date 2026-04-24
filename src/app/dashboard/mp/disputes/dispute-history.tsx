@@ -96,7 +96,7 @@ export default function DisputeHistory() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Dispute History</h2>
+        {/* <h2 className="text-xl font-bold">Dispute History</h2> */}
 
         <div className="flex items-center">
           <Input

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 
 import { HistoryTable } from "@/components/dashboard/tables";
 import {
@@ -319,16 +321,25 @@ export default function PolicyPagesPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex flex-col space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-gray-800">
-            Policy Pages
-          </h1>
-          <Button
-            onClick={handleCreateNew}
-            className="bg-[#0abbe3] hover:bg-[#09a0c3] text-white rounded-xl px-6 py-2 font-semibold"
+        <div className="flex flex-col gap-1 mb-4">
+          <Link
+            href="/dashboard/ad/config"
+            className="flex items-center gap-1 text-[13px] text-gray-500 hover:text-[#0abbe3] transition-colors w-fit"
           >
-            Add New
-          </Button>
+            <ChevronLeft className="w-4 h-4" />
+            Back to categories
+          </Link>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-gray-800">
+              Policy Pages
+            </h1>
+            <Button
+              onClick={handleCreateNew}
+              className="bg-[#0abbe3] hover:bg-[#09a0c3] text-white rounded-xl px-6 py-2 font-semibold"
+            >
+              Add New
+            </Button>
+          </div>
         </div>
 
         {/* Main Content */}

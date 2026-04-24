@@ -1,137 +1,197 @@
 "use client";
 
-import type React from "react";
-import {
-  XCircle,
-  CreditCard,
-  ArrowUpDown,
-  AlertTriangle,
-  CheckCircle,
+import React from "react";
+import { 
+  ArrowDownToLine, 
+  ArrowUpFromLine, 
+  Clock, 
+  XCircle, 
+  Ban, 
   DollarSign,
+  Briefcase,
+  CheckCircle2,
+  AlertCircle,
+  Hash
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { useGetDealsQuery, useGetDisputesQuery } from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
-
-interface StatItemProps {
-  icon: React.ReactNode;
-  amount: string;
-  label: string;
-  iconBg: string;
-}
-
-function StatItem({ icon, amount, label, iconBg }: StatItemProps) {
-  return (
-    <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors group">
-      <div className="flex items-center space-x-3">
-        <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center ${iconBg}`}
-        >
-          {icon}
-        </div>
-        <div>
-          <div className="font-semibold text-gray-900 text-lg">{amount}</div>
-          <div className="text-sm text-gray-600">{label}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface StatsSectionProps {
-  title: string;
-  stats: Array<{
-    icon: React.ReactNode;
-    amount: string;
-    label: string;
-    iconBg: string;
-  }>;
-}
-
-function StatsSection({ title, stats }: StatsSectionProps) {
-  return (
-    <Card className="bg-white border-none shadow-none ">
-      <CardContent className="p-4 md:p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-        <div className="space-y-4 grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-sm border-gray-200 border p-4">
-          {stats.map((stat, index) => (
-            <StatItem key={index} {...stat} />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+import { SummaryStatsCard } from "@/components/dashboard/summary-stats-card";
+import { 
+  useGetDealsQuery, 
+  useGetDisputesQuery,
+  useGetDepositsQuery,
+  useGetWithdrawalsQuery
+} from "@/lib/store/features/adminDashboardApi/adminDashboardApi";
 
 export function EcrowDisputeStats() {
-  // Fetch Deals Stats
-  const { data: activeDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'Active' }); // Assuming 'Active' status
-  const { data: completedDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'Completed' });
-  const { data: disputedDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'Disputed' }); // Or check logic
-  // "Total Commissions" not available via list.
+  // --- Deposits Data ---
+  const { data: totalDeposits, isLoading: depLoading } = useGetDepositsQuery({ page: 0, size: 0 });
+  const { data: pendingDeposits } = useGetDepositsQuery({ page: 0, size: 0, status: 'PENDING' });
+  const { data: failedDeposits } = useGetDepositsQuery({ page: 0, size: 0, status: 'FAILED' });
 
-  // Fetch Disputes Stats
+  // --- Withdrawals Data ---
+  const { data: totalWithdrawals, isLoading: withLoading } = useGetWithdrawalsQuery({ page: 0, size: 0 });
+  const { data: pendingWithdrawals } = useGetWithdrawalsQuery({ page: 0, size: 0, status: 'PENDING' });
+  const { data: failedWithdrawals } = useGetWithdrawalsQuery({ page: 0, size: 0, status: 'FAILED' });
+
+  // --- Deals (Transactions) Data ---
+  const { data: allDeals, isLoading: dealsLoading } = useGetDealsQuery({ page: 0, size: 0 });
+  const { data: inProgressDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'IN_PROGRESS' });
+  const { data: completedDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'COMPLETED' });
+  const { data: disputedDeals } = useGetDealsQuery({ page: 0, size: 0, status: 'DISPUTED' });
+
+  // --- Disputes Data ---
+  const { data: allDisputes, isLoading: disLoading } = useGetDisputesQuery({ page: 0, size: 0 });
+  const { data: openDisputes } = useGetDisputesQuery({ page: 0, size: 0, status: 'OPEN' });
   const { data: resolvedDisputes } = useGetDisputesQuery({ page: 0, size: 0, status: 'RESOLVED' });
-  const { data: pendingDisputes } = useGetDisputesQuery({ page: 0, size: 0, status: 'OPEN' });
-  const { data: escalatedDisputes } = useGetDisputesQuery({ page: 0, size: 0, status: 'ESCALATED' }); // Assuming status
+  const { data: unassignedDisputes } = useGetDisputesQuery({ page: 0, size: 0, status: 'UNASSIGNED' });
 
-  const transactionsStats = [
-    {
-      icon: <ArrowUpDown className="w-5 h-5 text-green-600" />,
-      amount: (activeDeals?.data?.totalElements || 0).toString(),
-      label: "Active Escrow Deals",
-      iconBg: "bg-green-100",
-    },
-    {
-      icon: <ArrowUpDown className="w-5 h-5 text-orange-600" />,
-      amount: (completedDeals?.data?.totalElements || 0).toString(),
-      label: "Completed Escrow Deals",
-      iconBg: "bg-orange-100",
-    },
-    {
-      icon: <ArrowUpDown className="w-5 h-5 text-red-600" />,
-      amount: (disputedDeals?.data?.totalElements || 0).toString(),
-      label: "Disputed Escrow Deals",
-      iconBg: "bg-red-100",
-    },
-    {
-      icon: <CreditCard className="w-5 h-5 text-blue-600" />,
-      amount: "N/A", // API limitation
-      label: "Total Commissions (Val)",
-      iconBg: "bg-blue-100",
-    },
-  ];
-
-  const disputeStats = [
-    {
-      icon: <CheckCircle className="w-5 h-5 text-green-600" />,
-      amount: (resolvedDisputes?.data?.totalElements || 0).toString(),
-      label: "Resolved Disputes",
-      iconBg: "bg-green-100",
-    },
-    {
-      icon: <AlertTriangle className="w-5 h-5 text-orange-600" />,
-      amount: (pendingDisputes?.data?.totalElements || 0).toString(),
-      label: "Pending Disputes",
-      iconBg: "bg-orange-100",
-    },
-    {
-      icon: <XCircle className="w-5 h-5 text-red-600" />,
-      amount: (escalatedDisputes?.data?.totalElements || 0).toString(),
-      label: "Escalated Disputes",
-      iconBg: "bg-red-100",
-    },
-    {
-      icon: <DollarSign className="w-5 h-5 text-blue-600" />,
-      amount: "N/A",
-      label: "Dispute Charges",
-      iconBg: "bg-blue-100",
-    },
-  ];
+  // Helper to format large numbers for mockup feel if count is low, or just show real count
+  const fmt = (val?: number) => val || 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <StatsSection title="Escrow Deals (Count)" stats={transactionsStats} />
-      <StatsSection title="Dispute Cases (Count)" stats={disputeStats} />
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Deposits Card */}
+      <SummaryStatsCard
+        title="Deposits"
+        isLoading={depLoading}
+        stats={[
+          {
+            icon: <ArrowDownToLine size={20} />,
+            amount: fmt(totalDeposits?.data?.totalElements),
+            label: "Total Deposited",
+            iconBg: "bg-green-100",
+            iconColor: "text-green-600"
+          },
+          {
+            icon: <Clock size={20} />,
+            amount: fmt(pendingDeposits?.data?.totalElements),
+            label: "Pending Deposits",
+            iconBg: "bg-orange-100",
+            iconColor: "text-orange-600"
+          },
+          {
+            icon: <Ban size={20} />,
+            amount: fmt(failedDeposits?.data?.totalElements),
+            label: "Rejected Deposits",
+            iconBg: "bg-red-100",
+            iconColor: "text-red-600"
+          },
+          {
+            icon: <DollarSign size={20} />,
+            amount: "₦0",
+            label: "Deposited Charge",
+            iconBg: "bg-blue-100",
+            iconColor: "text-blue-600"
+          }
+        ]}
+      />
+
+      {/* Withdrawals Card */}
+      <SummaryStatsCard
+        title="Withdrawals"
+        isLoading={withLoading}
+        stats={[
+          {
+            icon: <ArrowUpFromLine size={20} />,
+            amount: fmt(totalWithdrawals?.data?.totalElements),
+            label: "Total Withdrawals",
+            iconBg: "bg-green-100",
+            iconColor: "text-green-600"
+          },
+          {
+            icon: <Clock size={20} />,
+            amount: fmt(pendingWithdrawals?.data?.totalElements),
+            label: "Pending Withdrawals",
+            iconBg: "bg-orange-100",
+            iconColor: "text-orange-600"
+          },
+          {
+            icon: <Ban size={20} />,
+            amount: fmt(failedWithdrawals?.data?.totalElements),
+            label: "Rejected Withdrawals",
+            iconBg: "bg-red-100",
+            iconColor: "text-red-600"
+          },
+          {
+            icon: <DollarSign size={20} />,
+            amount: "₦0",
+            label: "Withdrawals Charge",
+            iconBg: "bg-blue-100",
+            iconColor: "text-blue-600"
+          }
+        ]}
+      />
+
+      {/* Transactions Card */}
+      <SummaryStatsCard
+        title="Transactions"
+        isLoading={dealsLoading}
+        stats={[
+          {
+            icon: <Briefcase size={20} />,
+            amount: fmt(allDeals?.data?.totalElements),
+            label: "Total Deals",
+            iconBg: "bg-green-100",
+            iconColor: "text-green-600"
+          },
+          {
+            icon: <Clock size={20} />,
+            amount: fmt(inProgressDeals?.data?.totalElements),
+            label: "In Progress",
+            iconBg: "bg-orange-100",
+            iconColor: "text-orange-600"
+          },
+          {
+            icon: <CheckCircle2 size={20} />,
+            amount: fmt(completedDeals?.data?.totalElements),
+            label: "Completed",
+            iconBg: "bg-blue-100",
+            iconColor: "text-blue-600"
+          },
+          {
+            icon: <XCircle size={20} />,
+            amount: fmt(disputedDeals?.data?.totalElements),
+            label: "Disputed",
+            iconBg: "bg-red-100",
+            iconColor: "text-red-600"
+          }
+        ]}
+      />
+
+      {/* Dispute Card */}
+      <SummaryStatsCard
+        title="Dispute"
+        isLoading={disLoading}
+        stats={[
+          {
+            icon: <AlertCircle size={20} />,
+            amount: fmt(allDisputes?.data?.totalElements),
+            label: "Total Disputes",
+            iconBg: "bg-green-100",
+            iconColor: "text-green-600"
+          },
+          {
+            icon: <Hash size={20} />,
+            amount: fmt(openDisputes?.data?.totalElements),
+            label: "Open Cases",
+            iconBg: "bg-orange-100",
+            iconColor: "text-orange-600"
+          },
+          {
+            icon: <CheckCircle2 size={20} />,
+            amount: fmt(resolvedDisputes?.data?.totalElements),
+            label: "Resolved",
+            iconBg: "bg-blue-100",
+            iconColor: "text-blue-600"
+          },
+          {
+            icon: <XCircle size={20} />,
+            amount: fmt(unassignedDisputes?.data?.totalElements),
+            label: "Unassigned",
+            iconBg: "bg-red-100",
+            iconColor: "text-red-600"
+          }
+        ]}
+      />
     </div>
   );
 }
